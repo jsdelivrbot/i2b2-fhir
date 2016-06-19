@@ -1,3 +1,4 @@
+package edu.harvard.i2b2.fhir;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -5,23 +6,22 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.junit.Assert.assertEquals;
-import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate4.HibernateTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import edu.harvard.i2b2.fhir.Utils;
-import edu.harvard.i2b2.fhir.cache.Cache;
-import edu.harvard.i2b2.fhir.converter.Application;
+import edu.harvard.i2b2.fhir.Oldconverter.Application;
+import edu.harvard.i2b2.fhir.modules.Cache;
 
 //@RunWith(SpringJUnit4ClassRunner.class)
 //@ContextConfiguration(classes = Application.class)
 //@TransactionConfiguration(defaultRollback = true)
 //@Transactional
-public class Spring4JUnit4Test {
+public class CacheTest {
 
-	static Logger logger = LoggerFactory.getLogger(Cache.class);
+	static Logger logger = LoggerFactory.getLogger(CacheTest.class);
 
 	
 	

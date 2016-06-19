@@ -1,4 +1,4 @@
-package hello;
+package edu.harvard.i2b2.fhir.Oldconverter;
 import org.springframework.boot.orm.jpa.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -14,8 +14,8 @@ import org.springframework.web.servlet.view.JstlView;
 @EnableWebMvc //mvc:annotation-driven
 @Configuration
 @EnableJpaRepositories({ "hello*","edu.harvard.i2b2.fhir.*" })
-@ComponentScan( { "hello*","edu.harvard*" })
-@EntityScan({ "hello*","edu.harvard*" }) 
+@ComponentScan( { "edu.harvard*" })
+@EntityScan({ "edu.harvard*" }) 
 @PropertySource(value = { "classpath:application.properties" })
 public class SpringWebConfig extends WebMvcConfigurerAdapter {
  
