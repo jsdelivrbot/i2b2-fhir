@@ -35,14 +35,22 @@ public class ConverterImplTest {
 	@Before
 	public void setup(){
 		Conversion conversion= new Conversion();
-		conversion.setCategory("i2b2-Demographics");
-		conversion.setUri("http://services.i2b2.org:9090/i2b2/services/QueryToolService/pdorequest");
 		try {
-			
+			conversion.setCategory("i2b2-Demographics");
+			conversion.setUri("http://services.i2b2.org:9090/i2b2/services/QueryToolService/pdorequest");
 			conversion.setWebRequestXmlTemplate(new String(Files.readAllBytes(Paths.get(getClass().getResource("/conversions/i2b2/Patient/getPatient.xml").toURI()))));
 			conversion.setxQueryScript(new String(Files.readAllBytes(Paths.get(getClass().getResource("/conversions/i2b2/Patient/getPatient.xquery").toURI()))));
 			conversion.setResourceNames("Patient");
 			conversion.setProperties("DOMAIN=i2b2demo\nUSER=demo");
+			repository.save(conversion);
+			
+			conversion= new Conversion();
+			conversion.setCategory("i2b2-Labs");
+			conversion.setUri("http://services.i2b2.org:9090/i2b2/services/QueryToolService/pdorequest");
+			conversion.setWebRequestXmlTemplate(new String(Files.readAllBytes(Paths.get(getClass().getResource("/conversions/i2b2/Observation//i2b2RequestTemplateForAPatient.xml").toURI()))));
+			conversion.setxQueryScript(new String(Files.readAllBytes(Paths.get(getClass().getResource("/conversions/i2b2/Observation/i2b2ToFHIR_default.xquery").toURI()))));
+			conversion.setResourceNames("Observation");
+			conversion.setProperties("DOMAIN=i2b2demo\nUSERNAME=demo\nPASSWORD=demouser\nXCATX=labs\nXPATHX=\\\\i2b2_LABS\\i2b2\\Labtests\\\n(:RESOURCE_FUNCTION:)={local:processLabObs(<A>{$labObs}</A>)/entry}");
 			repository.save(conversion);
 		} catch (IOException | URISyntaxException e) {
 			logger.error(e.getMessage(),e);
@@ -54,7 +62,9 @@ public class ConverterImplTest {
 	public void test() {
 		logger.debug("count:"+repository.count());
 		try {
-			logger.debug(converter.getWebServiceResponse("Patient", "1000000005", java.sql.Date.valueOf("2001-01-01"), java.sql.Date.valueOf("2016-01-01")));
+			//logger.debug(converter.getWebServiceResponse("Patient", "1000000005", java.sql.Date.valueOf("2001-01-01"), java.sql.Date.valueOf("2016-01-01")));
+			logger.debug("FHIR BUNDLE OUTPUT:"+converter.getWebServiceResponse("Observation", "1000000005", java.sql.Date.valueOf("2001-01-01"), java.sql.Date.valueOf("2016-01-01")));
+			
 		} catch (ConverterException e) {
 			logger.error(e.getMessage(),e);
 		}
