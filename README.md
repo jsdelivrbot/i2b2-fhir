@@ -2,7 +2,11 @@ The FHIR cell serves data from i2b2 instance, in FHIR format on per patient basi
 
 
 ==================================
-Installation 
+### Installation 
+
+The best way to install is by using docker (see [Wiki for docker] (https://github.com/waghsk/i2b2-fhir-cell/wiki/Docker))
+
+Alternatively, the following steps are for installation from the source code:
 
 (on amazon web instance. ssh as ec2-user and run the following)
 
@@ -12,7 +16,7 @@ sudo sh first_run.sh
 
 ===================================
 
-Test Installation
+### Test Installation
 
 The installation will start FHIR server at endpoint: http://IP_ADDRESS/srv-dstu21-0.3/api/open/
 
