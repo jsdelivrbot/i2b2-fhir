@@ -1,15 +1,17 @@
-package edu.harvard.i2b2.fhir.Fetcher;
+package edu.harvard.i2b2.fhir.fetcher;
 
 import java.sql.Date;
 
-import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.harvard.i2b2.fhir.Fetcher.entity.Conversion;
-import edu.harvard.i2b2.fhir.Fetcher.repository.ConversionRespository;
-import edu.harvard.i2b2.fhir.Fetcher.repository.FetchStatusRespository;
-import edu.harvard.i2b2.fhir.Fetcher.service.ConversionService;
-import edu.harvard.i2b2.fhir.Fetcher.service.FetchStatusService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import edu.harvard.i2b2.fhir.converter.ConverterException;
+import edu.harvard.i2b2.fhir.fetcher.fetchstatus.FetchStatusService;
 import edu.harvard.i2b2.fhir.modules.Cache;
+import edu.harvard.i2b2.fhir.modules.Converter;
 import edu.harvard.i2b2.fhir.modules.Fetcher;
 
 /*
@@ -17,22 +19,21 @@ import edu.harvard.i2b2.fhir.modules.Fetcher;
  * If not it calls converter to get delta of the data and updates cache
  * else it gets data from cache
  */
-
+@Component
 public class FetcherImpl implements Fetcher {
 	private static final long SLEEP_DURATION = 1000;// milliseconds
 	private static final long CACHE_DELAY = 1000;// milliseconds
-
+	static Logger logger = LoggerFactory.getLogger(Fetcher.class);
+	
+	
 	@Autowired
 	Cache cache;
-
-	@Autowired
-	Conversion conversion;
 
 	@Autowired
 	FetchStatusService fetchStatusService;
 
 	@Autowired
-	ConversionService conversionService;
+	Converter converter;
 
 	@Override
 	public String getData(String resourceName, String patientId, String startDate, String endDate) throws FetcherException {
@@ -53,9 +54,16 @@ public class FetcherImpl implements Fetcher {
 			Date lastFetchDT = fetchStatusService.getLastFetchDT(fsId);
 			Date lastCacheUpdateDT = fetchStatusService.getLastCacheUpdateDT(fsId);
 
-			if ((lastCacheUpdateDT.getTime() - lastFetchDT.getTime()) > CACHE_DELAY) {
+			if ((lastFetchDT==null)||
+					lastCacheUpdateDT==null||
+					((lastCacheUpdateDT.getTime() - lastFetchDT.getTime()) > CACHE_DELAY)
+					) {
 				// retrieve delta
-				fhirBundleXml = fetchData(fsId, lastFetchDT);
+				try {
+					fhirBundleXml = fetchData(fsId,resourceName, patientId,lastFetchDT,null);
+				} catch (ConverterException e) {
+					logger.error(e.getMessage(),e);
+				}
 				updateCache(fsId, fhirBundleXml);
 			}
 
@@ -65,7 +73,7 @@ public class FetcherImpl implements Fetcher {
 
 			// return data from cache
 			fetchStatusService.setUnlocked(fsId);
-			return null;
+			return "FETCHED:SUCCESS";
 		
 
 	}
@@ -75,8 +83,9 @@ public class FetcherImpl implements Fetcher {
 		cache.put(fhirBundleXml);
 	}
 
-	private String fetchData(String fsId, Date StartDate) {
+	private String fetchData(String fsId,String resourceName, String patientId, Date startDT,Date endDT) throws ConverterException {
 		fetchStatusService.setFetching(fsId);
+		converter.getWebServiceResponse(resourceName, patientId, startDT, endDT);
 		return null;
 	}
 }

@@ -1,6 +1,8 @@
-package edu.harvard.i2b2.fhir.Fetcher.entity;
+package edu.harvard.i2b2.fhir.fetcher.fetchstatus;
 
 import java.sql.Date;
+import java.util.Calendar;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -46,7 +48,9 @@ public class FetchStatus {
 	public void setLastFetchDT(Date lastFetchDT) {
 		this.lastFetchDT = lastFetchDT;
 	}
-
+	public void setLastFetchDT() {
+		setLastFetchDT(new Date(Calendar.getInstance().getTime().getTime()));
+	}		
 	public Date getLastCacheUpdateDT() {
 		return lastCacheUpdateDT;
 	}
@@ -54,6 +58,10 @@ public class FetchStatus {
 	public void setLastCacheUpdateDT(Date lastCacheUpdateDT) {
 		this.lastCacheUpdateDT = lastCacheUpdateDT;
 	}
+	
+	public void setLastCacheUpdateDT() {
+		setLastCacheUpdateDT(new Date(Calendar.getInstance().getTime().getTime()));
+	}	
 
 	public String getStatus() {
 		return status;

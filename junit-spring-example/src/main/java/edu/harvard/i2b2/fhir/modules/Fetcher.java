@@ -1,6 +1,6 @@
 package edu.harvard.i2b2.fhir.modules;
 
-import edu.harvard.i2b2.fhir.Fetcher.FetcherException;
+import edu.harvard.i2b2.fhir.fetcher.FetcherException;
 
 public interface Fetcher {
 	

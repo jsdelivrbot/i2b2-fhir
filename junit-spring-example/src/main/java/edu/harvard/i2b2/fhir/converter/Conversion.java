@@ -1,11 +1,11 @@
-package edu.harvard.i2b2.fhir.Fetcher.entity;
+package edu.harvard.i2b2.fhir.converter;
 
 import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 
-import edu.harvard.i2b2.fhir.modules.ConversionException;
 
 @Entity
 public class Conversion{
@@ -13,12 +13,21 @@ public class Conversion{
 	@Id
 	String category;
 	
+	String uri;
+	
 	String resourceNames;
 	
+	@Lob
+	String properties;
+	
+	@Lob
 	String webRequestXmlTemplate;
 	
+	@Lob
 	String xQueryScript;
 
+	String dateTimeFormat;
+	
 	public String getCategory() {
 		return category;
 	}
@@ -53,12 +62,40 @@ public class Conversion{
 		this.xQueryScript = xQueryScript;
 	}
 
+	public String getUri() {
+		return uri;
+	}
+
+	public void setUri(String uri) {
+		this.uri = uri;
+	}
+
+	public String getDateTimeFormat() {
+		return dateTimeFormat;
+	}
+
+	public void setDateTimeFormat(String dateTimeFormat) {
+		this.dateTimeFormat = dateTimeFormat;
+	}
+
+	public String getProperties() {
+		return properties;
+	}
+
+	public void setProperties(String properties) {
+		this.properties = properties;
+	}
+
 	@Override
 	public String toString() {
-		return "Conversion [category=" + category + ", resourceNames=" + resourceNames + ", webRequestXmlTemplate="
-				+ webRequestXmlTemplate + ", xQueryScript=" + xQueryScript + "]";
+		return "Conversion [category=" + category + ", uri=" + uri + ", resourceNames=" + resourceNames
+				+ ", properties=" + properties + ", webRequestXmlTemplate=" + webRequestXmlTemplate + ", xQueryScript="
+				+ xQueryScript + ", dateTimeFormat=" + dateTimeFormat + "]";
 	}
-	
+
+
+
+
 	
 	
 	//public String getFhirXmlBundle(String pid) throws ConversionException;

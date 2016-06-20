@@ -1,4 +1,4 @@
-package edu.harvard.i2b2.fhir.Fetcher;
+package edu.harvard.i2b2.fhir.fetcher;
 
 public class FetcherException extends Exception {
 

@@ -1,12 +1,10 @@
-package edu.harvard.i2b2.fhir.Fetcher.service;
+package edu.harvard.i2b2.fhir.fetcher.fetchstatus;
 
 import java.sql.Date;
+import java.util.Calendar;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import edu.harvard.i2b2.fhir.Fetcher.entity.FetchStatus;
-import edu.harvard.i2b2.fhir.Fetcher.repository.FetchStatusRespository;
 
 @Component
 public class FetchStatusServiceImpl implements FetchStatusService {
@@ -21,6 +19,10 @@ public class FetchStatusServiceImpl implements FetchStatusService {
 
 	public void setFetching(String id) {
 		FetchStatus fs = fetchStatusRespository.findOne(id);
+		if(fs==null) {
+			fs= new FetchStatus();fs.setId(id);
+			fs.setLastFetchDT();
+		}
 		fs.setStatus("fetching");
 		fetchStatusRespository.save(fs);
 

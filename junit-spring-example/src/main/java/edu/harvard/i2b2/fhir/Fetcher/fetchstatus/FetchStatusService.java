@@ -1,4 +1,4 @@
-package edu.harvard.i2b2.fhir.Fetcher.service;
+package edu.harvard.i2b2.fhir.fetcher.fetchstatus;
 
 import java.sql.Date;
 
