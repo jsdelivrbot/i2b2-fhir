@@ -17,8 +17,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import edu.harvard.i2b2.fhir.Oldconverter.Converter;
 import edu.harvard.i2b2.fhir.modules.Cache;
+
 
 @Component
 public class CacheImpl implements Cache {
@@ -37,7 +37,7 @@ public class CacheImpl implements Cache {
 	}
 
 	public String put(String xml) {
-		final String uri = "http://localhost:8090//hapi-fhir-jpaserver-example/baseDstu2/Patient/example";
+		final String uri = "http://localhost:8090/hapi-fhir-jpaserver-example/baseDstu2/";
 		logger.info("Will put:" + xml);
 
 		
@@ -53,7 +53,7 @@ public class CacheImpl implements Cache {
 		} catch (HttpClientErrorException e) {
 			logger.error("error is:"+e.getMessage());
 			logger.error("error detail:"+e.getResponseBodyAsString());
-			
+			return e.getResponseBodyAsString();
 		}
 		return response.toString();
 	}

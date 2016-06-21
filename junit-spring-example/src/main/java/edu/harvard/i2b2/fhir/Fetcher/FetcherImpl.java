@@ -36,7 +36,7 @@ public class FetcherImpl implements Fetcher {
 	Converter converter;
 
 	@Override
-	public String getData(String resourceName, String patientId, String startDate, String endDate) throws FetcherException {
+	public String getData(String resourceName, String patientId) throws FetcherException {
 		String fsId = resourceName + "-" + patientId;
 		String fhirBundleXml = null;
 
@@ -53,7 +53,8 @@ public class FetcherImpl implements Fetcher {
 
 			Date lastFetchDT = fetchStatusService.getLastFetchDT(fsId);
 			Date lastCacheUpdateDT = fetchStatusService.getLastCacheUpdateDT(fsId);
-
+			
+			
 			if ((lastFetchDT==null)||
 					lastCacheUpdateDT==null||
 					((lastCacheUpdateDT.getTime() - lastFetchDT.getTime()) > CACHE_DELAY)
@@ -62,7 +63,7 @@ public class FetcherImpl implements Fetcher {
 				try {
 					fhirBundleXml = fetchData(fsId,resourceName, patientId,lastFetchDT,null);
 				} catch (ConverterException e) {
-					logger.error(e.getMessage(),e);
+					logger.error(">>>"+e.getMessage(),e);
 				}
 				updateCache(fsId, fhirBundleXml);
 			}
@@ -73,19 +74,18 @@ public class FetcherImpl implements Fetcher {
 
 			// return data from cache
 			fetchStatusService.setUnlocked(fsId);
-			return "FETCHED:SUCCESS";
-		
-
+			return fhirBundleXml;
 	}
 
 	private void updateCache(String fsId, String fhirBundleXml) {
 		fetchStatusService.setCaching(fsId);
+		logger.trace("will put:"+fhirBundleXml);
 		cache.put(fhirBundleXml);
 	}
 
 	private String fetchData(String fsId,String resourceName, String patientId, Date startDT,Date endDT) throws ConverterException {
 		fetchStatusService.setFetching(fsId);
-		converter.getWebServiceResponse(resourceName, patientId, startDT, endDT);
-		return null;
+		return converter.getWebServiceResponse(resourceName, patientId, startDT, endDT);
+		
 	}
 }
