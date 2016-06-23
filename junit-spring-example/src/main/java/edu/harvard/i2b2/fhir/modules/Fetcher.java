@@ -4,7 +4,7 @@ import edu.harvard.i2b2.fhir.fetcher.FetcherException;
 
 public interface Fetcher {
 	
-	String getData(String resourceCategory,String patientId) throws FetcherException;
+	String getData(String fullUri) throws FetcherException;
 
 	
 }

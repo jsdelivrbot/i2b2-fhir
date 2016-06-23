@@ -36,10 +36,11 @@ public class FetcherImpl implements Fetcher {
 	Converter converter;
 
 	@Override
-	public String getData(String resourceName, String patientId) throws FetcherException {
-		String fsId = resourceName + "-" + patientId;
+	public String getData(String fullUri) throws FetcherException {
 		String fhirBundleXml = null;
-
+		FetchRequest req=new FetchRequest(fullUri);
+		String fsId=req.getId();
+		
 		// wait for fetchStatus to unlock
 		while (fetchStatusService.isLocked(fsId)) {
 			try {

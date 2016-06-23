@@ -45,11 +45,12 @@ public class WebController {
 	
 	@RequestMapping(value = "/fhir/{path:.*}", method = RequestMethod.GET)
 	public ResponseEntity fhirEndpoint(HttpServletRequest request, @PathVariable String path){
+		String fullUri=path+"?"+request.getQueryString();
 		logger.debug("path:"+path+"?"+request.getQueryString());
 		logger.debug("getContextPath()"+request.getContextPath());
 		String basePath=request.getRequestURL().toString().replace(path,"");
 		logger.debug("basePath:"+basePath);
-		return new ResponseEntity<>(request.getRequestURI(),HttpStatus.OK);
+		return new ResponseEntity<>(fetcher.getData(fullUri),HttpStatus.OK);
 		
 		//return new ResponseEntity<>(cache.get(cacheUrl+"/"+path+"?"+request.getQueryString()).replace(cacheUrl, basePath),HttpStatus.OK);
 		
@@ -62,7 +63,7 @@ public class WebController {
 		logger.debug("...fetch:" + pid);
 		
 		try {
-			return new ResponseEntity<>(fetcher.getData("Observation", pid),HttpStatus.OK);
+			return new ResponseEntity<>(Fetcher.getData("ddd"),HttpStatus.OK);
 		} catch (FetcherException e) {
 			logger.error(e.getMessage(),e);
 			return new ResponseEntity<>(e.getMessage(),HttpStatus.OK);
