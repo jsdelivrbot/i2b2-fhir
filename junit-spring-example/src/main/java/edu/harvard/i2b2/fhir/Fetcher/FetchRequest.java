@@ -1,6 +1,7 @@
 package edu.harvard.i2b2.fhir.fetcher;
 
 import java.sql.Date;
+import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +22,7 @@ public class FetchRequest {
 
 	public FetchRequest(String fullUri) {
 		this.fullUrl = fullUri;
+		
 		Pattern p = Pattern.compile("^(.+)\\?(.+)");
 		Matcher m = p.matcher(fullUri);
 		if (m.matches()) {
@@ -28,20 +30,22 @@ public class FetchRequest {
 			this.setPath(m.group(1));
 			this.setQueryString(m.group(2));
 		} else {
-			this.path = fullUri;
+			this.setPath(fullUri);
 		}
-		this.setResourceId(
-				(getResourceIdFromPath() != null) ? getResourceIdFromPath() :
-			 getResourceIdFromQuery());
-	logger.trace("ran");
-		this.patientId=(this.getResourceId()+"-").split("-")[0];
+		this.setResourceId((getResourceIdFromPath() != null) ? getResourceIdFromPath() : getResourceIdFromQuery());
+		logger.trace("ran");
+		this.patientId = (this.getResourceId() + "-").split("-")[0];
+		this.setResourceName(resourceNameFromPath());
+		
+		setStartDate(java.sql.Date.valueOf("2001-01-01"));
+		setEndDate(new java.sql.Date(Calendar.getInstance().getTimeInMillis()));
+
 		logger.trace(this.toString());
+
 	}
 
-	
-
 	private String getResourceIdFromPath() {
-		Pattern p = Pattern.compile("/(\\w*)/([^?]*)");
+		Pattern p = Pattern.compile("(\\w*)/([^?]*)");
 		Matcher m = p.matcher(this.getPath());
 		while (m.matches()) {
 			return m.group(2);
@@ -50,9 +54,9 @@ public class FetchRequest {
 	}
 
 	String getResourceIdFromQuery() {
-		String txt=this.getQueryString()+"&";
+		String txt = this.getQueryString() + "&";
 		for (String q : txt.split("&")) {
-			logger.trace("checking:"+q);
+			logger.trace("checking:" + q);
 			Pattern p = Pattern.compile("(id)=(\\w*)$");
 			Matcher m = p.matcher(q);
 			while (m.matches()) {
@@ -60,9 +64,9 @@ public class FetchRequest {
 			}
 		}
 		for (String q : txt.split("&")) {
-			logger.trace("checking:"+q);
+			logger.trace("checking:" + q);
 			Pattern p = Pattern.compile("(patient|subject)=(\\w*)");
-			
+
 			Matcher m = p.matcher(q);
 			while (m.matches()) {
 				return m.group(2);
@@ -71,6 +75,12 @@ public class FetchRequest {
 		return null;
 	}
 
+	
+	String resourceNameFromPath(){
+		logger.info("path:"+getPath());
+		return (this.getPath()+"/").split("/")[0];
+	}
+	
 	public String getFullUrl() {
 		return fullUrl;
 	}
@@ -112,8 +122,7 @@ public class FetchRequest {
 	}
 
 	public String getId() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getPatientId()+"-"+this.getResourceName();
 	}
 
 	public String getResourceId() {

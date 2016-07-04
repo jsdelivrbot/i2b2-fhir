@@ -5,8 +5,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.harvard.i2b2.fhir.Oldconverter.ConverterController;
-import edu.harvard.i2b2.fhir.Oldconverter.ConverterException;
+import edu.harvard.i2b2.fhir.converter.ConverterImpl;
+import edu.harvard.i2b2.fhir.modules.Converter;
 
 public class ConverterTest {
 
@@ -19,8 +19,8 @@ public class ConverterTest {
 	public void testWebserviceCall() {
 		logger.debug("completed");
 		// try {
-			 ConverterController converterController= new ConverterController();
-			 converterController.
+			 Converter converterController= new ConverterImpl();
+			// converterController.
 			// converterController.setCacheUrl("http://localhost:8090/hapi-fhir-jpaserver-example/baseDstu2/");
 			//converterController.getBundleBlocking("1000000005");
 		//} catch (InterruptedException | ConverterException e) {

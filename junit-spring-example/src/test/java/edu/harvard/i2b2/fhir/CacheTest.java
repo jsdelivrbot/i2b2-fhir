@@ -12,7 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import edu.harvard.i2b2.fhir.Utils;
-import edu.harvard.i2b2.fhir.Oldconverter.Application;
+
 import edu.harvard.i2b2.fhir.modules.Cache;
 
 //@RunWith(SpringJUnit4ClassRunner.class)

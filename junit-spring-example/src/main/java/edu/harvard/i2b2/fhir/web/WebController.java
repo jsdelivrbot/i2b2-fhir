@@ -44,9 +44,10 @@ public class WebController {
 	String cacheUrl;
 	
 	@RequestMapping(value = "/fhir/{path:.*}", method = RequestMethod.GET)
-	public ResponseEntity fhirEndpoint(HttpServletRequest request, @PathVariable String path){
+	public ResponseEntity fhirEndpoint(HttpServletRequest request, @PathVariable String path) throws FetcherException{
+		
 		String fullUri=path+"?"+request.getQueryString();
-		logger.debug("path:"+path+"?"+request.getQueryString());
+		logger.debug("fullPath:"+fullUri+"?"+request.getQueryString());
 		logger.debug("getContextPath()"+request.getContextPath());
 		String basePath=request.getRequestURL().toString().replace(path,"");
 		logger.debug("basePath:"+basePath);
@@ -56,14 +57,13 @@ public class WebController {
 		
 	}
 
-
 	@RequestMapping(value = "/fetch/{pid}", method = RequestMethod.GET)
 	public ResponseEntity getBundleBlocking(@PathVariable("pid") String pid)  {
 
 		logger.debug("...fetch:" + pid);
 		
 		try {
-			return new ResponseEntity<>(Fetcher.getData("ddd"),HttpStatus.OK);
+			return new ResponseEntity<>(fetcher.getData("ddd"),HttpStatus.OK);
 		} catch (FetcherException e) {
 			logger.error(e.getMessage(),e);
 			return new ResponseEntity<>(e.getMessage(),HttpStatus.OK);

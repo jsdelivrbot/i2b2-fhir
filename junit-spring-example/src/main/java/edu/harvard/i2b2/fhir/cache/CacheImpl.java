@@ -48,7 +48,7 @@ public class CacheImpl implements Cache {
 		headers.set("Accept", "application/xml+fhir");
 		HttpEntity<String> entity = new HttpEntity<String>(xml, headers);
 		try {
-		response = restTemplate.exchange(uri, HttpMethod.PUT, entity, String.class);
+		response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
 			logger.debug(response.toString());
 		} catch (HttpClientErrorException e) {
 			logger.error("error is:"+e.getMessage());

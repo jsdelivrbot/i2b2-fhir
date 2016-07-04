@@ -146,7 +146,7 @@ return
   <reliability value="ok"/>
   
    <subject>
-     <reference value="Patient/{$pid}"/>
+     <reference value="Patient/a{$pid}"/>
   </subject>
 
   </Observation>
@@ -248,7 +248,7 @@ declare function local:fnFhirDiagReport($sd as xs:string?, $ed as xs:string?,$co
     </coding>
   </code>
   <subject>
-    <reference value="Patient/{$pid}"/>
+    <reference value="Patient/a{$pid}"/>
    </subject>
   <effectiveDateTime value="{$sd}"/>
   <issued value="{$ed}"/>
@@ -505,6 +505,11 @@ return
 <resource xmlns:ns3="http://i2b2.harvard.edu/fhir/core">
 {$fhirObservation}
 </resource>
+<request>
+      <!-- POST: this was a create -->
+      <method value="PUT"/>
+      <url value="Observation/a{$pid}-{$count}"/>
+    </request>
 </entry>
 </set>
 
@@ -610,10 +615,8 @@ return <Bundle xmlns="http://hl7.org/fhir" >
 
 
 
-let $I:=root()(:doc('/Users/kbw19/tmp/new_git/res/i2b2-fhir/dstu2/xquery-2/src/main/resources/example/i2b2/reportsForAPatient.xml'):)
-(:doc('/Users/kbw19/tmp/new_git/res/i2b2-fhir/dstu1/xquery-1/src/main/resources/example/i2b2/diagnosisForAPatient.xml'):)
-(:root()doc('/Users/kbw19/tmp/new_git/res/i2b2-fhir/dstu1/xquery-1/src/main/resources/example/i2b2/labsForAPatientSimple.xml'):)
-(:doc('/Users/kbw19/tmp/new_git/res/i2b2-fhir/dstu21/xquery/src/main/resources/example/i2b2/labsAndMedicationsForAPatient.xml'):)
+let $I:=root()(:doc('/Users/kbw19/git/i2b2-fhir/junit-spring-example/src/main/resources/examples/i2b2ObservationResponse.xml'):)
+
   
 let $distObs:=local:distinctObservations($I)
 
@@ -624,9 +627,7 @@ let $reportObs:= $distObs//observation[panel_name="reports"]
 
 return <Bundle xmlns="http://hl7.org/fhir" xmlns:ns3="http://i2b2.harvard.edu/fhir/core">
 
-
-
-(:RESOURCE_FUNCTION:)
+{local:processLabObs(<A>{$labObs}</A>)/entry}
 </Bundle>
 
 

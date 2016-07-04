@@ -5,4 +5,8 @@ public class ConverterException extends Exception {
 		super(e.getMessage(),e);
 	}
 
+	public ConverterException(String msg) {
+		super(msg);
+	}
+
 }

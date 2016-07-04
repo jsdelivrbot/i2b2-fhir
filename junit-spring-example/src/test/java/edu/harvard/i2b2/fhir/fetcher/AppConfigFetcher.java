@@ -15,9 +15,9 @@ import edu.harvard.i2b2.fhir.converter.Conversion;
 import edu.harvard.i2b2.fhir.fetcher.fetchstatus.FetchStatusServiceImpl;
 
 //@SpringBootApplication
-
 @Configuration
-@ComponentScan( { "edu.harvard.i2b2.fhir.fetcher*","edu.harvard.i2b2.fhir.cache*" })
+@ComponentScan( { "edu.harvard.i2b2.fhir.converter.ConversionRepository","edu.harvard.i2b2.fhir.converter*", "edu.harvard.i2b2.fhir.fetcher.fetchstatus*","edu.harvard.i2b2.fhir.fetcher*","edu.harvard.i2b2.fhir.cache*" })
+//@ComponentScan( { "edu.harvard.i2b2.fhir.converter*" })
 @EnableAutoConfiguration
 
 //@Configuration
@@ -25,7 +25,7 @@ import edu.harvard.i2b2.fhir.fetcher.fetchstatus.FetchStatusServiceImpl;
 //@EntityScan({ "edu.harvard.Fetcher*" }) 
 //@EnableJpaRepositories
 //@EnableAutoConfiguration
-public class AppConfig {
+public class AppConfigFetcher {
 	
 	//@Bean
 	public FetchStatusServiceImpl getFetchStatusServiceImpl(){

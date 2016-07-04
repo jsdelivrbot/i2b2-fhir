@@ -95,7 +95,7 @@ else "unknown"
 declare function local:fnMetaData($last_updated as xs:string? ) as node(){
  <meta>
       <versionId value="1"/>
-      <lastUpdated value="{$last_updated}"/>
+     <!-- <lastUpdated value="{$last_updated}"/>-->
  </meta>
 };
 
@@ -221,13 +221,13 @@ return
     </coding>
    </maritalStatus>
   
-  -->
+
 
   <managingOrganization>
     <reference value="Organization/1"/>
   </managingOrganization>
   
-  
+    -->
    
    
   <active value="true"/>
@@ -255,6 +255,11 @@ return
     <resource>
 {local:fnPatient($zip, $id,$gender,$gender_expanded,$birthdate,$marital_status,$marital_status_raw,$race_code,$updateDate )}
     </resource>
+    <request>
+      <!-- POST: this was a create -->
+      <method value="PUT"/>
+      <url value="Patient/a{$id}"/>
+    </request>
 </entry>
 
 return <Bundle xmlns:ns2="http://www.w3.org/1999/xhtml" xmlns="http://hl7.org/fhir">

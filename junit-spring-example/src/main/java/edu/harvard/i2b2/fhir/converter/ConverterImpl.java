@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +40,9 @@ public class ConverterImpl implements Converter {
 	public String getWebServiceResponse(String resourceName, String patientId, Date startDT, Date endDT)
 			throws ConverterException {
 		String responseTransformed = null;
-		Conversion conversion = repository.findByResourceNames(resourceName).get(0);
+		List<Conversion> list= repository.findByResourceNames(resourceName);
+		if (list.size()==0) throw new ConverterException("no Conversion found for resourseName"+resourceName);
+		Conversion conversion = list.get(0);
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> response = null;
 		HttpHeaders headers = new HttpHeaders();
@@ -48,17 +51,16 @@ public class ConverterImpl implements Converter {
 		HttpEntity<String> entity = new HttpEntity<String>(requestXml, headers);
 		try {
 			response = restTemplate.exchange(conversion.getUri(), HttpMethod.PUT, entity, String.class);
-			logger.debug(response.toString());
+			logger.trace(response.toString());
 			responseTransformed = transformXml(conversion, response.getBody());
-			logger.trace("converted:"+responseTransformed);
 		} catch (HttpClientErrorException e) {
 			logger.error("error is:" + e.getMessage());
 			throw new ConverterException(e);
 		} catch (XQueryUtilException e) {
 			logger.error("error is:" + e.getMessage());
-			return responseTransformed;
+			return responseTransformed	;
 		}
-		logger.trace("converted completed:"+responseTransformed);
+		logger.debug("transformed response:"+responseTransformed);
 		return responseTransformed;
 	}
 
@@ -98,7 +100,7 @@ public class ConverterImpl implements Converter {
 					key = m.group(1);
 					val = m.group(2);
 					composed = composed.replace(key, val);
-					logger.debug("replacing:" + key + " with " + val);
+					logger.trace("replacing:" + key + " with " + val);
 				}
 			}
 		}
@@ -112,11 +114,11 @@ public class ConverterImpl implements Converter {
 			conversion.setCategory("i2b2-Demographics");
 			conversion.setUri("http://services.i2b2.org:9090/i2b2/services/QueryToolService/pdorequest");
 			conversion.setWebRequestXmlTemplate(
-					Utils.getFile("/conversions/i2b2/Patient/getPatient.xml")
+					Utils.getFile("conversions/i2b2/Patient/getPatient.xml")
 					//new String(Files.readAllBytes(Paths.get(getClass().getResource("/conversions/i2b2/Patient/getPatient.xml").toURI())))
 					);
 			conversion.setxQueryScript(
-					Utils.getFile("/conversions/i2b2/Patient/getPatient.xquery"));
+					Utils.getFile("conversions/i2b2/Patient/getPatient.xquery"));
 					//new String(Files.readAllBytes(
 					//Paths.get(getClass().getResource("/conversions/i2b2/Patient/getPatient.xquery").toURI()))));
 			conversion.setResourceNames("Patient");
@@ -127,11 +129,11 @@ public class ConverterImpl implements Converter {
 			conversion.setCategory("i2b2-Labs");
 			conversion.setUri("http://services.i2b2.org:9090/i2b2/services/QueryToolService/pdorequest");
 			conversion.setWebRequestXmlTemplate(
-					Utils.getFile("/conversions/i2b2/Observation/i2b2RequestTemplateForAPatient.xml"));
+					Utils.getFile("conversions/i2b2/Observation/i2b2RequestTemplateForAPatient.xml"));
 					//new String(Files.readAllBytes(Paths.get(getClass()
 					//.getResource("/conversions/i2b2/Observation//i2b2RequestTemplateForAPatient.xml").toURI()))));
 			conversion.setxQueryScript(
-					Utils.getFile("/conversions/i2b2/Observation/i2b2ToFHIR_default.xquery"));
+					Utils.getFile("conversions/i2b2/Observation/i2b2ToFHIR_default.xquery"));
 					//new String(Files.readAllBytes(Paths
 					//.get(getClass().getResource("/conversions/i2b2/Observation/i2b2ToFHIR_default.xquery").toURI()))));
 			conversion.setResourceNames("Observation");

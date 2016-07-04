@@ -62,7 +62,7 @@ public class FetcherImpl implements Fetcher {
 					) {
 				// retrieve delta
 				try {
-					fhirBundleXml = fetchData(fsId,resourceName, patientId,lastFetchDT,null);
+					fhirBundleXml = fetchData(req);
 				} catch (ConverterException e) {
 					logger.error(">>>"+e.getMessage(),e);
 				}
@@ -84,9 +84,9 @@ public class FetcherImpl implements Fetcher {
 		cache.put(fhirBundleXml);
 	}
 
-	private String fetchData(String fsId,String resourceName, String patientId, Date startDT,Date endDT) throws ConverterException {
-		fetchStatusService.setFetching(fsId);
-		return converter.getWebServiceResponse(resourceName, patientId, startDT, endDT);
+	private String fetchData(FetchRequest req) throws ConverterException {
+		fetchStatusService.setFetching(req.fullUrl);
+		return converter.getWebServiceResponse(req.getResourceName(), req.getPatientId(),req.getStartDate(), req.getEndDate());
 		
 	}
 }
