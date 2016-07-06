@@ -1,8 +1,5 @@
 package edu.harvard.i2b2.fhir.fetcher;
 
-import static org.junit.Assert.*;
-
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;

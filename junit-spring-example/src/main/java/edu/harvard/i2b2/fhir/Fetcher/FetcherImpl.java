@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import edu.harvard.i2b2.fhir.converter.ConverterException;
 import edu.harvard.i2b2.fhir.fetcher.fetchstatus.FetchStatusService;
 import edu.harvard.i2b2.fhir.modules.Cache;
+import edu.harvard.i2b2.fhir.modules.CacheException;
 import edu.harvard.i2b2.fhir.modules.Converter;
 import edu.harvard.i2b2.fhir.modules.Fetcher;
 
@@ -37,10 +38,11 @@ public class FetcherImpl implements Fetcher {
 
 	@Override
 	public String getData(String fullUri) throws FetcherException {
+		
 		String fhirBundleXml = null;
 		FetchRequest req=new FetchRequest(fullUri);
 		String fsId=req.getId();
-		
+		try{
 		// wait for fetchStatus to unlock
 		while (fetchStatusService.isLocked(fsId)) {
 			try {
@@ -63,10 +65,11 @@ public class FetcherImpl implements Fetcher {
 				// retrieve delta
 				try {
 					fhirBundleXml = fetchData(req);
+					logger.debug("fhirBundleXml:"+fhirBundleXml);
 				} catch (ConverterException e) {
 					logger.error(">>>"+e.getMessage(),e);
 				}
-				updateCache(fsId, fhirBundleXml);
+				//updateCache(fsId, fhirBundleXml);
 			}
 
 			// find last update date of cache
@@ -74,11 +77,16 @@ public class FetcherImpl implements Fetcher {
 			// update cache
 
 			// return data from cache
+			//fhirBundleXml=cache.get(fullUri);
+		} catch (Exception e) {
+			throw new FetcherException(e.getMessage(),e);
+		}
 			fetchStatusService.setUnlocked(fsId);
 			return fhirBundleXml;
+			
 	}
 
-	private void updateCache(String fsId, String fhirBundleXml) {
+	private void updateCache(String fsId, String fhirBundleXml) throws CacheException {
 		fetchStatusService.setCaching(fsId);
 		logger.trace("will put:"+fhirBundleXml);
 		cache.put(fhirBundleXml);
@@ -86,7 +94,7 @@ public class FetcherImpl implements Fetcher {
 
 	private String fetchData(FetchRequest req) throws ConverterException {
 		fetchStatusService.setFetching(req.fullUrl);
-		return converter.getWebServiceResponse(req.getResourceName(), req.getPatientId(),req.getStartDate(), req.getEndDate());
+		return converter.getWebServiceResponse(req);
 		
 	}
 }

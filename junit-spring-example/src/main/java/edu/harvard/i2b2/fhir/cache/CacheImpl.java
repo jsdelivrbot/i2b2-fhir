@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import javax.annotation.Resource;
 
+import org.hibernate.cache.CacheException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -54,7 +55,10 @@ public class CacheImpl implements Cache {
 			logger.error("error is:"+e.getMessage());
 			logger.error("error detail:"+e.getResponseBodyAsString());
 			return e.getResponseBodyAsString();
+		}catch (Exception e) {
+			logger.error("error is:"+e.getMessage());
 		}
+		if (response==null) throw new CacheException("No response from cache");
 		return response.toString();
 	}
 

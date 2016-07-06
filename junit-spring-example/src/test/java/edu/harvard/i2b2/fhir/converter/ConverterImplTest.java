@@ -18,6 +18,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import com.google.common.io.Resources;
 
+import edu.harvard.i2b2.fhir.fetcher.FetchRequest;
 import edu.harvard.i2b2.fhir.modules.Converter;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -63,7 +64,7 @@ public class ConverterImplTest {
 		logger.debug("count:"+repository.count());
 		try {
 			//logger.debug(converter.getWebServiceResponse("Patient", "1000000005", java.sql.Date.valueOf("2001-01-01"), java.sql.Date.valueOf("2016-01-01")));
-			logger.debug("FHIR BUNDLE OUTPUT:"+converter.getWebServiceResponse("Observation", "1000000005", java.sql.Date.valueOf("2001-01-01"), java.sql.Date.valueOf("2016-01-01")));
+			logger.debug("FHIR BUNDLE OUTPUT:"+converter.getWebServiceResponse(new FetchRequest("Observation", "1000000005", java.sql.Date.valueOf("2001-01-01"), java.sql.Date.valueOf("2016-01-01"))));
 			
 		} catch (ConverterException e) {
 			logger.error(e.getMessage(),e);

@@ -627,7 +627,7 @@ let $reportObs:= $distObs//observation[panel_name="reports"]
 
 return <Bundle xmlns="http://hl7.org/fhir" xmlns:ns3="http://i2b2.harvard.edu/fhir/core">
 
-{local:processLabObs(<A>{$labObs}</A>)/entry}
+(:RESOURCE_FUNCTION:)
 </Bundle>
 
 

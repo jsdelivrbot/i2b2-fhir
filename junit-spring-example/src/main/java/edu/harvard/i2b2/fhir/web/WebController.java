@@ -39,38 +39,43 @@ public class WebController {
 
 	@Autowired
 	private Fetcher fetcher;
-	
+
 	@Value("${cache.url}")
 	String cacheUrl;
-	
+
 	@RequestMapping(value = "/fhir/{path:.*}", method = RequestMethod.GET)
-	public ResponseEntity fhirEndpoint(HttpServletRequest request, @PathVariable String path) throws FetcherException{
-		
-		String fullUri=path+"?"+request.getQueryString();
-		logger.debug("fullPath:"+fullUri+"?"+request.getQueryString());
-		logger.debug("getContextPath()"+request.getContextPath());
-		String basePath=request.getRequestURL().toString().replace(path,"");
-		logger.debug("basePath:"+basePath);
-		return new ResponseEntity<>(fetcher.getData(fullUri),HttpStatus.OK);
-		
-		//return new ResponseEntity<>(cache.get(cacheUrl+"/"+path+"?"+request.getQueryString()).replace(cacheUrl, basePath),HttpStatus.OK);
-		
+	public ResponseEntity fhirEndpoint(HttpServletRequest request, @PathVariable String path) {
+
+		String fullUri = path + "?" + request.getQueryString();
+		logger.debug("fullPath:" + fullUri);
+		logger.debug("getContextPath()" + request.getContextPath());
+		String basePath = request.getRequestURL().toString().replace(path, "");
+		logger.debug("basePath:" + basePath);
+		try {
+			return new ResponseEntity<>(fetcher.getData(fullUri), HttpStatus.OK);
+
+		} catch (FetcherException e) {
+			logger.error(e.getMessage(), e);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
+		}
+		// return new
+		// ResponseEntity<>(cache.get(cacheUrl+"/"+path+"?"+request.getQueryString()).replace(cacheUrl,
+		// basePath),HttpStatus.OK);
+
 	}
 
 	@RequestMapping(value = "/fetch/{pid}", method = RequestMethod.GET)
-	public ResponseEntity getBundleBlocking(@PathVariable("pid") String pid)  {
+	public ResponseEntity getBundleBlocking(@PathVariable("pid") String pid) {
 
 		logger.debug("...fetch:" + pid);
-		
-		try {
-			return new ResponseEntity<>(fetcher.getData("ddd"),HttpStatus.OK);
-		} catch (FetcherException e) {
-			logger.error(e.getMessage(),e);
-			return new ResponseEntity<>(e.getMessage(),HttpStatus.OK);
-		}
-	
-	}
 
-	
+		try {
+			return new ResponseEntity<>(fetcher.getData("ddd"), HttpStatus.OK);
+		} catch (FetcherException e) {
+			logger.error(e.getMessage(), e);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
+		}
+
+	}
 
 }

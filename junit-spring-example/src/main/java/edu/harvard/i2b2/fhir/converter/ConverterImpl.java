@@ -1,12 +1,10 @@
 package edu.harvard.i2b2.fhir.converter;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +25,7 @@ import edu.harvard.i2b2.basex.XQueryUtil;
 import edu.harvard.i2b2.basex.XQueryUtilException;
 import edu.harvard.i2b2.fhir.LocalUtils;
 import edu.harvard.i2b2.fhir.Utils;
+import edu.harvard.i2b2.fhir.fetcher.FetchRequest;
 import edu.harvard.i2b2.fhir.modules.Converter;
 
 @Component
@@ -37,22 +36,33 @@ public class ConverterImpl implements Converter {
 	ConversionRepository repository;
 
 	@Override
-	public String getWebServiceResponse(String resourceName, String patientId, Date startDT, Date endDT)
+	/*
+	 * if conversion.getWebRequestXmlTemplate() is null GET is done or else POST s performed
+	 * 
+	 */
+	public String getWebServiceResponse(FetchRequest req)//(String resourceName, String patientId, Date startDT, Date endDT)
 			throws ConverterException {
 		String responseTransformed = null;
-		List<Conversion> list= repository.findByResourceNames(resourceName);
-		if (list.size()==0) throw new ConverterException("no Conversion found for resourseName"+resourceName);
+		List<Conversion> list= repository.findByResourceNames(req.getResourceName());
+		if (list.size()==0) throw new ConverterException("no Conversion found for resourseName"+req.getResourceName());
 		Conversion conversion = list.get(0);
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> response = null;
 		HttpHeaders headers = new HttpHeaders();
-		String requestXml = composeRequestXml(conversion, resourceName, patientId, startDT, endDT);
+		compose(conversion, req);
 
-		HttpEntity<String> entity = new HttpEntity<String>(requestXml, headers);
+		HttpEntity<String> entity = new HttpEntity<String>(conversion.getComposedWebRequestXml(), headers);
+		logger.info("Request:"+conversion.getComposedUri());
+		logger.info("RequestXml:"+((conversion.getComposedWebRequestXml()==null)?"":conversion.getComposedWebRequestXml()));
+		
+		
+		
 		try {
-			response = restTemplate.exchange(conversion.getUri(), HttpMethod.PUT, entity, String.class);
-			logger.trace(response.toString());
-			responseTransformed = transformXml(conversion, response.getBody());
+			response = restTemplate.exchange(conversion.getComposedUri(), 
+					(conversion.getWebRequestXmlTemplate()==null)?HttpMethod.GET:HttpMethod.PUT,
+							entity, String.class);
+			logger.info("Response:"+response.toString());
+			responseTransformed = transformXml(response.getBody(),conversion);
 		} catch (HttpClientErrorException e) {
 			logger.error("error is:" + e.getMessage());
 			throw new ConverterException(e);
@@ -64,30 +74,31 @@ public class ConverterImpl implements Converter {
 		return responseTransformed;
 	}
 
-	private String composeRequestXml(Conversion conversion, String resourceName, String patientId, Date startDT,
-			Date endDT) {
+	private void compose(Conversion conversion, FetchRequest req) {
+		logger.info("composing conversion:"+conversion.toString());
+		conversion.setComposedUri(putProps(conversion.getUri(),req,conversion));
+		conversion.setComposedWebRequestXml(putProps(conversion.getWebRequestXmlTemplate(),req,conversion));
+		conversion.setComposedXQueryScript(putProps(conversion.getxQueryScript(),req,conversion));
+		logger.info("composed conversion:"+conversion.toString());
+			
+	}
+	
+	private String putProps(String input, FetchRequest req, Conversion conversion){
 		String props = conversion.getProperties();
+		if(props==null) props="";
 		String format = conversion.getDateTimeFormat();
-		format = (format == null) ? "yyyy-MM-dd'T'HH:mm:ss.SSSZ" : "";
+		if (format == null) {format= "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; }
 		SimpleDateFormat sdf = new SimpleDateFormat(format);
-		String composed = conversion.getWebRequestXmlTemplate().replace("PATIENT_ID", patientId);
-		if(startDT!=null) composed=composed.replace("START_DATE_TIME", sdf.format(startDT));
-		if(endDT!=null) composed=composed.replace("END_DATE_TIME", sdf.format(endDT));
 		
-		composed = putProps(composed, conversion);
-		return composed;
+		return putProps(input,"PATIENT_ID="+req.getPatientId()+"\nSTART_DATE_TIME="+sdf.format(req.getStartDate())+"\nEND_DATE_TIME="+sdf.format(req.getEndDate()));
 	}
-
-	private String transformXml(Conversion conversion, String inputXml) throws XQueryUtilException {
-		String query = conversion.getxQueryScript();
-		query = putProps(query, conversion);
-		logger.debug("query:"+query);
+	
+	private String putProps(String input, String props) {
 		
-		return XQueryUtil.processXQuery(query, inputXml);
-	}
-
-	private String putProps(String input, Conversion conversion) {
-		String props = conversion.getProperties();
+		//String props = conversion.getProperties();
+		if(input==null) return input;
+		logger.debug("Props:" + props);
+		logger.debug("Input:" + input);
 		String composed = input;
 		if (props != null) {
 			for (String prop : props.split("\n")) {
@@ -107,10 +118,24 @@ public class ConverterImpl implements Converter {
 		return composed;
 	}
 
+	
+	private String transformXml( String inputXml,Conversion conversion) throws XQueryUtilException {
+		String query = conversion.getComposedXQueryScript();
+		logger.debug("query:"+query);
+		return XQueryUtil.processXQuery(query, inputXml);
+	}
+	
 	@PostConstruct
 	public void init() throws Exception {
-		Conversion conversion = new Conversion();
 		//try {
+		ConvertersFromDir list = new ConvertersFromDir("confidential/converterRootDir");
+		for(Conversion c:list.getList()){
+			logger.trace("c:"+c.toString());
+			repository.save(c);
+		}
+		if(1==1) return;
+		Conversion conversion = new Conversion();
+		
 			conversion.setCategory("i2b2-Demographics");
 			conversion.setUri("http://services.i2b2.org:9090/i2b2/services/QueryToolService/pdorequest");
 			conversion.setWebRequestXmlTemplate(
@@ -140,6 +165,9 @@ public class ConverterImpl implements Converter {
 			conversion.setProperties(
 					"DOMAIN=i2b2demo\nUSERNAME=demo\nPASSWORD=demouser\nXCATX=labs\nXPATHX=\\\\i2b2_LABS\\i2b2\\Labtests\\\n(:RESOURCE_FUNCTION:)={local:processLabObs(<A>{$labObs}</A>)/entry}");
 			repository.save(conversion);
+			
+			
+			
 		//} catch (IOException e) {
 			//logger.error(e.getMessage(), e);
 		//}
