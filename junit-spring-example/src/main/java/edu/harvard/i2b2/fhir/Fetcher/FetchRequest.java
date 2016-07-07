@@ -121,7 +121,7 @@ public class FetchRequest {
 		this.endDate = endDate;
 	}
 
-	public String getId() {
+	public String genId() {
 		return this.getPatientId()+"-"+this.getResourceName();
 	}
 

@@ -2,7 +2,6 @@ package edu.harvard.i2b2.fhir.fetcher;
 
 import java.sql.Date;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +22,9 @@ import edu.harvard.i2b2.fhir.modules.Fetcher;
 @Component
 public class FetcherImpl implements Fetcher {
 	private static final long SLEEP_DURATION = 1000;// milliseconds
-	private static final long CACHE_DELAY = 1000;// milliseconds
+	private static final long CACHE_DELAY = 1;// milliseconds
 	static Logger logger = LoggerFactory.getLogger(Fetcher.class);
-	
-	
+
 	@Autowired
 	Cache cache;
 
@@ -38,63 +36,79 @@ public class FetcherImpl implements Fetcher {
 
 	@Override
 	public String getData(String fullUri) throws FetcherException {
-		
-		String fhirBundleXml = null;
-		FetchRequest req=new FetchRequest(fullUri);
-		String fsId=req.getId();
-		try{
-		// wait for fetchStatus to unlock
-		while (fetchStatusService.isLocked(fsId)) {
-			try {
-				Thread.sleep(SLEEP_DURATION);
-			} catch (InterruptedException e) {
-				throw new FetcherException(e.getMessage(),e);
-			}
-		}
-			// lock fetchStatus
-			fetchStatusService.setFetching(fsId);
 
-			Date lastFetchDT = fetchStatusService.getLastFetchDT(fsId);
-			Date lastCacheUpdateDT = fetchStatusService.getLastCacheUpdateDT(fsId);
+		String fhirBundleXml = null;
+		FetchRequest req = new FetchRequest(fullUri);
+		String fsId = req.genId();
+		try {
+			// wait for fetchStatus to unlock
 			
-			
-			if ((lastFetchDT==null)||
-					lastCacheUpdateDT==null||
-					((lastCacheUpdateDT.getTime() - lastFetchDT.getTime()) > CACHE_DELAY)
-					) {
-				// retrieve delta
+			//if (1 == 1)
+				//return fetchStatusService.getFetchStatus(fsId).toString();
+			while (isFetchStatusLocked(fsId)) {
 				try {
-					fhirBundleXml = fetchData(req);
-					logger.debug("fhirBundleXml:"+fhirBundleXml);
-				} catch (ConverterException e) {
-					logger.error(">>>"+e.getMessage(),e);
+					Thread.sleep(SLEEP_DURATION);
+					logger.trace("in while loop");
+					// return getData(fullUri);
+				} catch (InterruptedException e) {
+					throw new FetcherException(e.getMessage(), e);
 				}
-				//updateCache(fsId, fhirBundleXml);
 			}
+			fetchStatusService.setFetching(fsId);
+			// lock fetchStatus
+
+			// Date lastFetchDT = fetchStatusService.getLastFetchDT(fsId);
+			// Date lastCacheUpdateDT =
+			// fetchStatusService.getLastCacheUpdateDT(fsId);
+			
+
+			// if ((lastFetchDT==null)||
+			// lastCacheUpdateDT==null||
+			// ((lastCacheUpdateDT.getTime() - lastFetchDT.getTime()) >
+			// CACHE_DELAY)
+			// ) {
+			// retrieve delta
+			//Thread.sleep(15000);
+			
+			try {
+				fhirBundleXml = fetchData(req);
+				logger.debug("fhirBundleXml:" + fhirBundleXml);
+			} catch (ConverterException e) {
+				logger.error(">>>" + e.getMessage(), e);
+			}
+			 updateCache(fsId, fhirBundleXml);
+			// }
 
 			// find last update date of cache
 
 			// update cache
 
 			// return data from cache
-			//fhirBundleXml=cache.get(fullUri);
+			 fhirBundleXml=cache.get(fullUri);
 		} catch (Exception e) {
-			throw new FetcherException(e.getMessage(),e);
-		}
 			fetchStatusService.setUnlocked(fsId);
-			return fhirBundleXml;
-			
+			throw new FetcherException(e.getMessage(), e);
+		}
+		fetchStatusService.setUnlocked(fsId);
+		return fhirBundleXml;
+
+	}
+
+	private boolean isFetchStatusLocked(String fsId) {
+		 
+		 
+		return fetchStatusService.isLocked(fsId);
+
 	}
 
 	private void updateCache(String fsId, String fhirBundleXml) throws CacheException {
-		fetchStatusService.setCaching(fsId);
-		logger.trace("will put:"+fhirBundleXml);
+		// fetchStatusService.setCaching(fsId);
+		logger.trace("will put:" + fhirBundleXml);
 		cache.put(fhirBundleXml);
 	}
 
 	private String fetchData(FetchRequest req) throws ConverterException {
-		fetchStatusService.setFetching(req.fullUrl);
 		return converter.getWebServiceResponse(req);
-		
+
 	}
 }

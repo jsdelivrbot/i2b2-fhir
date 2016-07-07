@@ -63,6 +63,13 @@ public class CacheImpl implements Cache {
 	}
 
 	public String get(String uri) {
+		uri=uri.replaceAll("subject=", "subject=a");
+		final String baseUri = "http://localhost:8090/hapi-fhir-jpaserver-example/baseDstu2/";
+		uri=baseUri+uri;
+		
+		
+		logger.info("Will get:" + uri);
+
 		RestTemplate restTemplate = new RestTemplate();
 
 		HttpHeaders headers = new HttpHeaders();

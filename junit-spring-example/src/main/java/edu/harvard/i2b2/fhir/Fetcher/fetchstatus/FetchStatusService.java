@@ -8,7 +8,7 @@ public interface FetchStatusService {
 
 	void setFetching(String fetchStatusId);
 
-	void setCaching(String fetchStatusId);
+	//void setCaching(String fetchStatusId);
 
 	void setUnlocked(String fetchStatusId);
 
@@ -16,8 +16,8 @@ public interface FetchStatusService {
 
 	Date getLastFetchDT(String fetchStatusId);
 
-	void createFetchStatus(String id);
+	//void createFetchStatus(String id);
 	
-	
+	public FetchStatus getFetchStatus(String id);
 	
 }

@@ -5,6 +5,9 @@ import java.util.Calendar;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.UniqueConstraint;
+
+import org.springframework.transaction.annotation.Transactional;
 
 @Entity
 public class FetchStatus {
@@ -15,7 +18,10 @@ public class FetchStatus {
 	String patientId;
 	Date lastFetchDT;
 	Date lastCacheUpdateDT;
-	String status;// Fetching, Caching or unlocked
+	
+	//String status;// Fetching, Caching or unlocked
+	
+	int count;
 
 	public String getId() {
 		return id;
@@ -61,21 +67,24 @@ public class FetchStatus {
 	
 	public void setLastCacheUpdateDT() {
 		setLastCacheUpdateDT(new Date(Calendar.getInstance().getTime().getTime()));
-	}	
-
-	public String getStatus() {
-		return status;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
 	}
 
 	@Override
 	public String toString() {
 		return "FetchStatus [id=" + id + ", resourceName=" + resourceName + ", patientId=" + patientId
-				+ ", lastFetchDT=" + lastFetchDT + ", lastCacheUpdateDT=" + lastCacheUpdateDT + ", status=" + status
+				+ ", lastFetchDT=" + lastFetchDT + ", lastCacheUpdateDT=" + lastCacheUpdateDT + ", count=" + count
 				+ "]";
-	}
+	}	
+
+	
+	
 
 }

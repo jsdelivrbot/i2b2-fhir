@@ -64,18 +64,8 @@ public class WebController {
 
 	}
 
-	@RequestMapping(value = "/fetch/{pid}", method = RequestMethod.GET)
-	public ResponseEntity getBundleBlocking(@PathVariable("pid") String pid) {
+	
 
-		logger.debug("...fetch:" + pid);
-
-		try {
-			return new ResponseEntity<>(fetcher.getData("ddd"), HttpStatus.OK);
-		} catch (FetcherException e) {
-			logger.error(e.getMessage(), e);
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
-		}
-
-	}
+	
 
 }

@@ -1,6 +1,8 @@
 package edu.harvard.i2b2.fhir.converter;
 
-
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,14 +40,20 @@ public class ConverterImpl implements Converter {
 
 	@Override
 	/*
-	 * if conversion.getWebRequestXmlTemplate() is null GET is done or else POST s performed
+	 * if conversion.getWebRequestXmlTemplate() is null GET is done or else POST
+	 * s performed
 	 * 
 	 */
-	public String getWebServiceResponse(FetchRequest req)//(String resourceName, String patientId, Date startDT, Date endDT)
+	public String getWebServiceResponse(FetchRequest req)// (String
+															// resourceName,
+															// String patientId,
+															// Date startDT,
+															// Date endDT)
 			throws ConverterException {
 		String responseTransformed = null;
-		List<Conversion> list= repository.findByResourceNames(req.getResourceName());
-		if (list.size()==0) throw new ConverterException("no Conversion found for resourseName"+req.getResourceName());
+		List<Conversion> list = repository.findByResourceNames(req.getResourceName());
+		if (list.size() == 0)
+			throw new ConverterException("no Conversion found for resourseName" + req.getResourceName());
 		Conversion conversion = list.get(0);
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> response = null;
@@ -52,51 +61,56 @@ public class ConverterImpl implements Converter {
 		compose(conversion, req);
 
 		HttpEntity<String> entity = new HttpEntity<String>(conversion.getComposedWebRequestXml(), headers);
-		logger.info("Request:"+conversion.getComposedUri());
-		logger.info("RequestXml:"+((conversion.getComposedWebRequestXml()==null)?"":conversion.getComposedWebRequestXml()));
-		
-		
-		
+		logger.info("Request:" + conversion.getComposedUri());
+		logger.info("RequestXml:"
+				+ ((conversion.getComposedWebRequestXml() == null) ? "" : conversion.getComposedWebRequestXml()));
+
 		try {
-			response = restTemplate.exchange(conversion.getComposedUri(), 
-					(conversion.getWebRequestXmlTemplate()==null)?HttpMethod.GET:HttpMethod.PUT,
-							entity, String.class);
-			logger.info("Response:"+response.toString());
-			responseTransformed = transformXml(response.getBody(),conversion);
+			response = restTemplate.exchange(conversion.getComposedUri(),
+					(conversion.getWebRequestXmlTemplate() == null) ? HttpMethod.GET : HttpMethod.PUT, entity,
+					String.class);
+			logger.info("Response:" + response.toString());
+			responseTransformed = transformXml(response.getBody(), conversion);
 		} catch (HttpClientErrorException e) {
 			logger.error("error is:" + e.getMessage());
 			throw new ConverterException(e);
 		} catch (XQueryUtilException e) {
 			logger.error("error is:" + e.getMessage());
-			return responseTransformed	;
+			return responseTransformed;
 		}
-		logger.debug("transformed response:"+responseTransformed);
+		logger.debug("transformed response:" + responseTransformed);
 		return responseTransformed;
 	}
 
-	private void compose(Conversion conversion, FetchRequest req) {
-		logger.info("composing conversion:"+conversion.toString());
-		conversion.setComposedUri(putProps(conversion.getUri(),req,conversion));
-		conversion.setComposedWebRequestXml(putProps(conversion.getWebRequestXmlTemplate(),req,conversion));
-		conversion.setComposedXQueryScript(putProps(conversion.getxQueryScript(),req,conversion));
-		logger.info("composed conversion:"+conversion.toString());
-			
+	private void compose(Conversion conversion, FetchRequest req) throws ConverterException {
+		logger.info("composing conversion:" + conversion.toString());
+		conversion.setComposedUri(putProps(conversion.getUri(), req, conversion));
+		conversion.setComposedWebRequestXml(
+				putProps(conversion.getWebRequestXmlTemplate(), req, conversion));
+		conversion.setComposedXQueryScript(putProps(attachxQueryLib("fhir.xqm", conversion.getxQueryScript()), req, conversion));
+		logger.info("composed conversion:" + conversion.toString());
+
 	}
-	
-	private String putProps(String input, FetchRequest req, Conversion conversion){
+
+	private String putProps(String input, FetchRequest req, Conversion conversion) {
 		String props = conversion.getProperties();
-		if(props==null) props="";
+		if (props == null)
+			props = "";
 		String format = conversion.getDateTimeFormat();
-		if (format == null) {format= "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; }
+		if (format == null) {
+			format = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+		}
 		SimpleDateFormat sdf = new SimpleDateFormat(format);
-		
-		return putProps(input,"PATIENT_ID="+req.getPatientId()+"\nSTART_DATE_TIME="+sdf.format(req.getStartDate())+"\nEND_DATE_TIME="+sdf.format(req.getEndDate()));
+
+		return putProps(input, "PATIENT_ID=" + req.getPatientId() + "\nSTART_DATE_TIME="
+				+ sdf.format(req.getStartDate()) + "\nEND_DATE_TIME=" + sdf.format(req.getEndDate()));
 	}
-	
+
 	private String putProps(String input, String props) {
-		
-		//String props = conversion.getProperties();
-		if(input==null) return input;
+
+		// String props = conversion.getProperties();
+		if (input == null)
+			return input;
 		logger.debug("Props:" + props);
 		logger.debug("Input:" + input);
 		String composed = input;
@@ -118,59 +132,75 @@ public class ConverterImpl implements Converter {
 		return composed;
 	}
 
-	
-	private String transformXml( String inputXml,Conversion conversion) throws XQueryUtilException {
-		String query = conversion.getComposedXQueryScript();
-		logger.debug("query:"+query);
+	private String attachxQueryLib(String libname, String xquery) throws ConverterException {
+		String path = "lib/"+libname;
+		try {
+			return removeFirstLine(FileUtils.readFileToString(LocalUtils.getFile(path))) + removeFirstLine(xquery);
+		} catch (IOException | URISyntaxException e) {
+			throw new ConverterException(e);
+		}
+	}
+
+	private String removeFirstLine(String txt) {
+		String out = "";
+		if (txt==null || (!txt.contains("\n"))) return txt;
+		String[] lines = txt.split("\n");
+		
+		for (int i = 1; i < lines.length; i++) {
+			out += "\n"+lines[i];
+		}
+		return out;
+	}
+
+	private String transformXml(String inputXml, Conversion conversion) throws XQueryUtilException {
+		String query = conversion.getComposedXQueryScript().replaceAll("f:", "local:");
+		logger.debug("query:" + query);
 		return XQueryUtil.processXQuery(query, inputXml);
 	}
-	
+
 	@PostConstruct
 	public void init() throws Exception {
-		//try {
+		// try {
 		ConvertersFromDir list = new ConvertersFromDir("confidential/converterRootDir");
-		for(Conversion c:list.getList()){
-			logger.trace("c:"+c.toString());
+		for (Conversion c : list.getList()) {
+			logger.trace("c:" + c.toString());
 			repository.save(c);
 		}
-		if(1==1) return;
+		if (1 == 1)
+			return;
 		Conversion conversion = new Conversion();
-		
-			conversion.setCategory("i2b2-Demographics");
-			conversion.setUri("http://services.i2b2.org:9090/i2b2/services/QueryToolService/pdorequest");
-			conversion.setWebRequestXmlTemplate(
-					Utils.getFile("conversions/i2b2/Patient/getPatient.xml")
-					//new String(Files.readAllBytes(Paths.get(getClass().getResource("/conversions/i2b2/Patient/getPatient.xml").toURI())))
-					);
-			conversion.setxQueryScript(
-					Utils.getFile("conversions/i2b2/Patient/getPatient.xquery"));
-					//new String(Files.readAllBytes(
-					//Paths.get(getClass().getResource("/conversions/i2b2/Patient/getPatient.xquery").toURI()))));
-			conversion.setResourceNames("Patient");
-			conversion.setProperties("DOMAIN=i2b2demo\nUSER=demo");
-			repository.save(conversion);
 
-			conversion = new Conversion();
-			conversion.setCategory("i2b2-Labs");
-			conversion.setUri("http://services.i2b2.org:9090/i2b2/services/QueryToolService/pdorequest");
-			conversion.setWebRequestXmlTemplate(
-					Utils.getFile("conversions/i2b2/Observation/i2b2RequestTemplateForAPatient.xml"));
-					//new String(Files.readAllBytes(Paths.get(getClass()
-					//.getResource("/conversions/i2b2/Observation//i2b2RequestTemplateForAPatient.xml").toURI()))));
-			conversion.setxQueryScript(
-					Utils.getFile("conversions/i2b2/Observation/i2b2ToFHIR_default.xquery"));
-					//new String(Files.readAllBytes(Paths
-					//.get(getClass().getResource("/conversions/i2b2/Observation/i2b2ToFHIR_default.xquery").toURI()))));
-			conversion.setResourceNames("Observation");
-			conversion.setProperties(
-					"DOMAIN=i2b2demo\nUSERNAME=demo\nPASSWORD=demouser\nXCATX=labs\nXPATHX=\\\\i2b2_LABS\\i2b2\\Labtests\\\n(:RESOURCE_FUNCTION:)={local:processLabObs(<A>{$labObs}</A>)/entry}");
-			repository.save(conversion);
-			
-			
-			
-		//} catch (IOException e) {
-			//logger.error(e.getMessage(), e);
-		//}
+		conversion.setCategory("i2b2-Demographics");
+		conversion.setUri("http://services.i2b2.org:9090/i2b2/services/QueryToolService/pdorequest");
+		conversion.setWebRequestXmlTemplate(Utils.getFile("conversions/i2b2/Patient/getPatient.xml")
+		// new
+		// String(Files.readAllBytes(Paths.get(getClass().getResource("/conversions/i2b2/Patient/getPatient.xml").toURI())))
+		);
+		conversion.setxQueryScript(Utils.getFile("conversions/i2b2/Patient/getPatient.xquery"));
+		// new String(Files.readAllBytes(
+		// Paths.get(getClass().getResource("/conversions/i2b2/Patient/getPatient.xquery").toURI()))));
+		conversion.setResourceNames("Patient");
+		conversion.setProperties("DOMAIN=i2b2demo\nUSER=demo");
+		repository.save(conversion);
+
+		conversion = new Conversion();
+		conversion.setCategory("i2b2-Labs");
+		conversion.setUri("http://services.i2b2.org:9090/i2b2/services/QueryToolService/pdorequest");
+		conversion.setWebRequestXmlTemplate(
+				Utils.getFile("conversions/i2b2/Observation/i2b2RequestTemplateForAPatient.xml"));
+		// new String(Files.readAllBytes(Paths.get(getClass()
+		// .getResource("/conversions/i2b2/Observation//i2b2RequestTemplateForAPatient.xml").toURI()))));
+		conversion.setxQueryScript(Utils.getFile("conversions/i2b2/Observation/i2b2ToFHIR_default.xquery"));
+		// new String(Files.readAllBytes(Paths
+		// .get(getClass().getResource("/conversions/i2b2/Observation/i2b2ToFHIR_default.xquery").toURI()))));
+		conversion.setResourceNames("Observation");
+		conversion.setProperties(
+				"DOMAIN=i2b2demo\nUSERNAME=demo\nPASSWORD=demouser\nXCATX=labs\nXPATHX=\\\\i2b2_LABS\\i2b2\\Labtests\\\n(:RESOURCE_FUNCTION:)={local:processLabObs(<A>{$labObs}</A>)/entry}");
+		repository.save(conversion);
+
+		// } catch (IOException e) {
+		// logger.error(e.getMessage(), e);
+		// }
 	}
 
 }

@@ -9,8 +9,8 @@ declare function local:all-whitespace
  } ; 
  
 declare function local:fnI2b2TimeToFhirTime($r as xs:string?) as xs:string{ 
-let $x :=fn:replace($r,'.000Z$','') 
-return fn:concat($x,'+05:00')
+let $x :=fn:replace($r,'.000Z$','')
+ return fn:concat($x,'+05:00')
 };
  
 declare function local:fnDoseFhir($dose as xs:string?,$unit as xs:string?) as node()?
