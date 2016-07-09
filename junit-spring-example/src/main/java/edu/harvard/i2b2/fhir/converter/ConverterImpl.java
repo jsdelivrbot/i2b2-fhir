@@ -58,19 +58,20 @@ public class ConverterImpl implements Converter {
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> response = null;
 		HttpHeaders headers = new HttpHeaders();
-		compose(conversion, req);
+		Conversion composed=compose(conversion, req);
 
-		HttpEntity<String> entity = new HttpEntity<String>(conversion.getComposedWebRequestXml(), headers);
-		logger.info("Request:" + conversion.getComposedUri());
+		HttpEntity<String> entity = new HttpEntity<String>(composed.getWebRequestXmlTemplate(), headers);
+		logger.info("Request:" + composed.getUri());
 		logger.info("RequestXml:"
-				+ ((conversion.getComposedWebRequestXml() == null) ? "" : conversion.getComposedWebRequestXml()));
+				+ ((composed.getWebRequestXmlTemplate() == null) ? "" : composed.getWebRequestXmlTemplate()));
 
 		try {
-			response = restTemplate.exchange(conversion.getComposedUri(),
-					(conversion.getWebRequestXmlTemplate() == null) ? HttpMethod.GET : HttpMethod.PUT, entity,
+			response = restTemplate.exchange(composed.getUri(),
+					HttpMethod.GET,//(composed.getWebRequestXmlTemplate() == null) ? HttpMethod.GET : HttpMethod.PUT, 
+							entity,
 					String.class);
 			logger.info("Response:" + response.toString());
-			responseTransformed = transformXml(response.getBody(), conversion);
+			responseTransformed = transformXml(response.getBody(), composed);
 		} catch (HttpClientErrorException e) {
 			logger.error("error is:" + e.getMessage());
 			throw new ConverterException(e);
@@ -82,14 +83,15 @@ public class ConverterImpl implements Converter {
 		return responseTransformed;
 	}
 
-	private void compose(Conversion conversion, FetchRequest req) throws ConverterException {
+	private Conversion compose(Conversion conversion, FetchRequest req) throws ConverterException {
 		logger.info("composing conversion:" + conversion.toString());
-		conversion.setComposedUri(putProps(conversion.getUri(), req, conversion));
-		conversion.setComposedWebRequestXml(
+		Conversion composed=new Conversion();
+		composed.setUri(putProps(conversion.getUri(), req, conversion));
+		composed.setWebRequestXmlTemplate(
 				putProps(conversion.getWebRequestXmlTemplate(), req, conversion));
-		conversion.setComposedXQueryScript(putProps(attachxQueryLib("fhir.xqm", conversion.getxQueryScript()), req, conversion));
+		composed.setxQueryScript(putProps(attachxQueryLib("fhir.xqm", conversion.getxQueryScript()), req, conversion));
 		logger.info("composed conversion:" + conversion.toString());
-
+		return composed;
 	}
 
 	private String putProps(String input, FetchRequest req, Conversion conversion) {
@@ -153,7 +155,7 @@ public class ConverterImpl implements Converter {
 	}
 
 	private String transformXml(String inputXml, Conversion conversion) throws XQueryUtilException {
-		String query = conversion.getComposedXQueryScript().replaceAll("f:", "local:");
+		String query = conversion.getxQueryScript().replaceAll("f:", "local:");
 		logger.debug("query:" + query);
 		return XQueryUtil.processXQuery(query, inputXml);
 	}

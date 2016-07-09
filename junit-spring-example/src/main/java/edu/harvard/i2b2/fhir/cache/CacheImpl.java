@@ -18,6 +18,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import edu.harvard.i2b2.fhir.fetcher.FetchRequest;
 import edu.harvard.i2b2.fhir.modules.Cache;
 
 
@@ -25,7 +26,7 @@ import edu.harvard.i2b2.fhir.modules.Cache;
 public class CacheImpl implements Cache {
 
 	static Logger logger = LoggerFactory.getLogger(Cache.class);
-
+	final String baseUri = "http://localhost:8090/hapi-fhir-jpaserver-example/baseDstu2/";
 	String cacheUri;
 	
 	
@@ -38,9 +39,7 @@ public class CacheImpl implements Cache {
 	}
 
 	public String put(String xml) {
-		final String uri = "http://localhost:8090/hapi-fhir-jpaserver-example/baseDstu2/";
 		logger.info("Will put:" + xml);
-
 		
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> response=null;
@@ -49,7 +48,7 @@ public class CacheImpl implements Cache {
 		headers.set("Accept", "application/xml+fhir");
 		HttpEntity<String> entity = new HttpEntity<String>(xml, headers);
 		try {
-		response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+		response = restTemplate.exchange(baseUri, HttpMethod.POST, entity, String.class);
 			logger.debug(response.toString());
 		} catch (HttpClientErrorException e) {
 			logger.error("error is:"+e.getMessage());
@@ -62,11 +61,9 @@ public class CacheImpl implements Cache {
 		return response.toString();
 	}
 
-	public String get(String uri) {
-		uri=uri.replaceAll("subject=", "subject=a");
-		final String baseUri = "http://localhost:8090/hapi-fhir-jpaserver-example/baseDstu2/";
+	public String get(FetchRequest req) {
+		String uri=req.getFullUrl().replaceAll("subject=", "subject=a");
 		uri=baseUri+uri;
-		
 		
 		logger.info("Will get:" + uri);
 
@@ -78,6 +75,6 @@ public class CacheImpl implements Cache {
 		HttpEntity<String> entity = new HttpEntity<String>("", headers);
 		ResponseEntity<String> result = restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
 		logger.debug(result.toString());
-		return result.getBody().trim();
+		return result.getBody().trim().replaceAll("a"+req.getPatientId(), req.getPatientId());
 	}
 }

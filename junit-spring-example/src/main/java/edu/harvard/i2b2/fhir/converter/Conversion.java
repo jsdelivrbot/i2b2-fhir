@@ -15,8 +15,6 @@ public class Conversion{
 	
 	String uri;
 	
-	String composedUri;
-	
 	String resourceNames;
 	
 	@Lob
@@ -26,14 +24,8 @@ public class Conversion{
 	String webRequestXmlTemplate;
 	
 	@Lob
-	String composedWebRequestXml;
-	
-	@Lob
 	String xQueryScript;
 	
-	@Lob
-	String composedXQueryScript;
-
 	String dateTimeFormat;
 	
 	public String getCategory() {
@@ -94,42 +86,6 @@ public class Conversion{
 		this.properties = properties;
 	}
 
-	public String getComposedUri() {
-		return composedUri;
-	}
-
-	public void setComposedUri(String composedUri) {
-		this.composedUri = composedUri;
-	}
-
-	public String getComposedWebRequestXml() {
-		return composedWebRequestXml;
-	}
-
-	public void setComposedWebRequestXml(String composedWebRequestXml) {
-		this.composedWebRequestXml = composedWebRequestXml;
-	}
-
-	public String getComposedXQueryScript() {
-		return composedXQueryScript;
-	}
-
-	public void setComposedXQueryScript(String composedXQueryScript) {
-		this.composedXQueryScript = composedXQueryScript;
-	}
-
-	@Override
-	public String toString() {
-		return "Conversion [category=" + category + ", uri=" + uri + ", composedUri=" + composedUri + ", resourceNames="
-				+ resourceNames + ", properties=" + properties + ", webRequestXmlTemplate=" + webRequestXmlTemplate
-				+ ", composedWebRequestXml=" + composedWebRequestXml + ", xQueryScript=" + xQueryScript
-				+ ", composedXQueryScript=" + composedXQueryScript + ", dateTimeFormat=" + dateTimeFormat + "]";
-	}
-
-	
-
-
 	
 	
-	//public String getFhirXmlBundle(String pid) throws ConversionException;
 }

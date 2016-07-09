@@ -75,6 +75,8 @@ public class FetchStatusServiceImpl implements FetchStatusService {
 		
 		fs.setCount(fs.getCount()-1);
 		logger.trace("Set status to unlock:"+fs+"<"+fetchStatusRespository.findById(id).size());
+		
+		fs.setLastCacheUpdateDT();
 		//fetchStatusRespository.delete(fs);
 		fetchStatusRespository.save(fs);
 	}
@@ -83,6 +85,8 @@ public class FetchStatusServiceImpl implements FetchStatusService {
 		FetchStatus fs = fetchStatusRespository.findOne(id);
 		return fs.getLastCacheUpdateDT();
 	}
+	
+	
 
 	public Date getLastFetchDT(String id) {
 		FetchStatus fs = fetchStatusRespository.findOne(id);

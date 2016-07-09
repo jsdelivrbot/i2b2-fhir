@@ -58,9 +58,15 @@ public class FetcherImpl implements Fetcher {
 			// lock fetchStatus
 
 			// Date lastFetchDT = fetchStatusService.getLastFetchDT(fsId);
-			// Date lastCacheUpdateDT =
-			// fetchStatusService.getLastCacheUpdateDT(fsId);
+			Date  lastCacheUpdateDT=
+				fetchStatusService.getLastCacheUpdateDT(fsId);
 			
+			if(lastCacheUpdateDT!=null){
+				req.setStartDate(lastCacheUpdateDT);
+				logger.debug("lastCacheUPdateDT:"+lastCacheUpdateDT.toString());
+			}else{
+				logger.debug("lastCacheUPdateDT is  null");
+			}
 
 			// if ((lastFetchDT==null)||
 			// lastCacheUpdateDT==null||
@@ -72,6 +78,7 @@ public class FetcherImpl implements Fetcher {
 			
 			try {
 				fhirBundleXml = fetchData(req);
+				
 				logger.debug("fhirBundleXml:" + fhirBundleXml);
 			} catch (ConverterException e) {
 				logger.error(">>>" + e.getMessage(), e);
@@ -84,7 +91,7 @@ public class FetcherImpl implements Fetcher {
 			// update cache
 
 			// return data from cache
-			 fhirBundleXml=cache.get(fullUri);
+			 fhirBundleXml=cache.get(req);
 		} catch (Exception e) {
 			fetchStatusService.setUnlocked(fsId);
 			throw new FetcherException(e.getMessage(), e);
