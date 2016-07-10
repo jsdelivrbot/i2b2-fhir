@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -13,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import edu.harvard.i2b2.fhir.LocalUtils;
 import edu.harvard.i2b2.fhir.Utils;
 
-public class ConvertersFromDir {
+public class ConvertersFromDir  {
 	static Logger logger = LoggerFactory.getLogger(ConvertersFromDir.class);
 	List<Conversion> list;
 	String dirRoot;
@@ -26,9 +28,11 @@ public class ConvertersFromDir {
 		File f = new File(pRoot);
 
 		String rp="confidential/converterRootDir/oncall-pulse";
-		//for (File category : f.listFiles()) {
-			File category=LocalUtils.getFile("confidential/converterRootDir/oncall-pulse");
+		for (File category : f.listFiles()) {
+			//category=LocalUtils.getFile("confidential/converterRootDir/oncall-pulse");
+			logger.trace("path:"+f.getName());
 			Conversion conversion = new Conversion();
+			rp= rp="confidential/converterRootDir/"+category.getName();
 			conversion.setCategory(category.getName());
 			
 			String p = rp + "/uri.txt";
@@ -63,11 +67,22 @@ public class ConvertersFromDir {
 				conversion.setDateTimeFormat(getFile(p));
 				
 			}else{ throw new RuntimeException("date time format not preset:"+p);}
+			
+			
+			p = rp+ "/priority";
+			if (exists(p)) {
+				conversion.setPriority(Integer.parseInt(getFile(p)));
+				
+			}else{ throw new RuntimeException("date time format not preset:"+p);}
 			list.add(conversion);
-		//}
-		
-		
+		}
+		Collections.sort(list);
+		for(Conversion c:list){
+			logger.debug("name:"+c.getCategory()+":"+c.getPriority()+":"+c.getUri());
+		}
 	}
+	
+	
 
 	private String getFile(String p) throws IOException, URISyntaxException {
 		//File file=new File(p);

@@ -8,7 +8,7 @@ import javax.persistence.Lob;
 
 
 @Entity
-public class Conversion{
+public class Conversion implements Comparable<Conversion>{
 	
 	@Id
 	String category;
@@ -28,6 +28,8 @@ public class Conversion{
 	
 	String dateTimeFormat;
 	
+	int priority;
+	
 	public String getCategory() {
 		return category;
 	}
@@ -35,8 +37,6 @@ public class Conversion{
 	public void setCategory(String category) {
 		this.category = category;
 	}
-
-	
 
 	public String getResourceNames() {
 		return resourceNames;
@@ -84,6 +84,28 @@ public class Conversion{
 
 	public void setProperties(String properties) {
 		this.properties = properties;
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	public void setPriority(int priority) {
+		this.priority = priority;
+	}
+
+	@Override
+	public String toString() {
+		return "Conversion [category=" + category + ", uri=" + uri + ", resourceNames=" + resourceNames
+				+ ", properties=" + properties + ", webRequestXmlTemplate=" + webRequestXmlTemplate + ", xQueryScript="
+				+ xQueryScript + ", dateTimeFormat=" + dateTimeFormat + ", priority=" + priority + "]";
+	}
+
+	@Override
+	public int compareTo(Conversion o) {
+		//ascending order
+		return this.priority - o.getPriority(); 
+		
 	}
 
 	
