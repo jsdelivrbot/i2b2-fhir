@@ -1,6 +1,7 @@
 package edu.harvard.i2b2.fhir.fetcher;
 
 import java.sql.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,8 @@ public class FetcherImpl implements Fetcher {
 	@Override
 	public String getData(String fullUri) throws FetcherException {
 
-		String fhirBundleXml = null;
+		List<String> fhirBundles = null;
+		String cacheResponse=null;
 		FetchRequest req = new FetchRequest(fullUri);
 		String fsId = req.genId();
 		try {
@@ -77,13 +79,14 @@ public class FetcherImpl implements Fetcher {
 			//Thread.sleep(15000);
 			
 			try {
-				fhirBundleXml = fetchData(req);
+				fhirBundles=fetchData(req);
 				
-				logger.debug("fhirBundleXml:" + fhirBundleXml);
+				logger.debug("fhirBundleXml:" + fhirBundles);
 			} catch (ConverterException e) {
 				logger.error(">>>" + e.getMessage(), e);
 			}
-			 updateCache(fsId, fhirBundleXml);
+			
+			 
 			// }
 
 			// find last update date of cache
@@ -91,13 +94,16 @@ public class FetcherImpl implements Fetcher {
 			// update cache
 
 			// return data from cache
-			 fhirBundleXml=cache.get(req);
+			updateCache(fsId, fhirBundles);
+			cacheResponse= cache.get(req);
+	
 		} catch (Exception e) {
 			fetchStatusService.setUnlocked(fsId);
 			throw new FetcherException(e.getMessage(), e);
 		}
 		fetchStatusService.setUnlocked(fsId);
-		return fhirBundleXml;
+		
+		return cacheResponse; 
 
 	}
 
@@ -108,14 +114,18 @@ public class FetcherImpl implements Fetcher {
 
 	}
 
-	private void updateCache(String fsId, String fhirBundleXml) throws CacheException {
+	private void updateCache(String fsId, List<String> fhirBundles) throws CacheException {
 		// fetchStatusService.setCaching(fsId);
-		logger.trace("will put:" + fhirBundleXml);
-		cache.put(fhirBundleXml);
+		for(String xml:fhirBundles){
+			logger.trace("will put in cache:" + xml);
+			cache.put(xml);
+		}
+		
+		
 	}
 
-	private String fetchData(FetchRequest req) throws ConverterException {
-		return converter.getWebServiceResponse(req);
+	private List<String> fetchData(FetchRequest req) throws ConverterException {
+		return converter.fetchWebServiceData(req);
 
 	}
 }

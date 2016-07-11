@@ -23,16 +23,16 @@ public class ConvertersFromDir  {
 	ConvertersFromDir(String dirRoot) throws IOException, URISyntaxException {
 		list = new ArrayList<Conversion>();
 
-		String pRoot = Utils.getFilePath(dirRoot);
-		logger.trace("root File Path:"+pRoot);
-		File f = new File(pRoot);
+		//dirRoot="confidential/converterRootDir";
+		
+		File dir=LocalUtils.getFile(dirRoot);
+logger.trace("root dir:"+dir.list()[0]);
 
-		String rp="confidential/converterRootDir/oncall-pulse";
-		for (File category : f.listFiles()) {
-			//category=LocalUtils.getFile("confidential/converterRootDir/oncall-pulse");
-			logger.trace("path:"+f.getName());
+		String rp="";//"confidential/converterRootDir/oncall-pulse";
+		for (File category : dir.listFiles()) {
+			logger.trace("path:"+category.getName());
 			Conversion conversion = new Conversion();
-			rp= rp="confidential/converterRootDir/"+category.getName();
+			rp=dirRoot+"/"+category.getName();
 			conversion.setCategory(category.getName());
 			
 			String p = rp + "/uri.txt";

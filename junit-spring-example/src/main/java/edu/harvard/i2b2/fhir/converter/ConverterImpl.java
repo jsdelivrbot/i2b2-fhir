@@ -5,6 +5,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -44,51 +46,65 @@ public class ConverterImpl implements Converter {
 	 * s performed
 	 * 
 	 */
-	public String getWebServiceResponse(FetchRequest req)// (String
-															// resourceName,
-															// String patientId,
-															// Date startDT,
-															// Date endDT)
+	public List<String> fetchWebServiceData(FetchRequest req)// (String
+																// resourceName,
+																// String
+																// patientId,
+																// Date startDT,
+																// Date endDT)
 			throws ConverterException {
+		List<String> respList = new ArrayList<String>();
 		String responseTransformed = null;
+
 		List<Conversion> list = repository.findByResourceNames(req.getResourceName());
 		if (list.size() == 0)
 			throw new ConverterException("no Conversion found for resourseName" + req.getResourceName());
-		Conversion conversion = list.get(0);
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> response = null;
-		HttpHeaders headers = new HttpHeaders();
-		Conversion composed=compose(conversion, req);
+		Collections.sort(list);//sort by priority
+		for (Conversion conversion : list) {
+			RestTemplate restTemplate = new RestTemplate();
+			ResponseEntity<String> response = null;
+			HttpHeaders headers = new HttpHeaders();
+			Conversion composed = compose(conversion, req);
 
-		HttpEntity<String> entity = new HttpEntity<String>(composed.getWebRequestXmlTemplate(), headers);
-		logger.info("Request:" + composed.getUri());
-		logger.info("RequestXml:"
-				+ ((composed.getWebRequestXmlTemplate() == null) ? "" : composed.getWebRequestXmlTemplate()));
+			HttpEntity<String> entity = new HttpEntity<String>(composed.getWebRequestXmlTemplate(), headers);
+			logger.info("Request:" + composed.getUri());
+			logger.info("RequestXml:"
+					+ ((composed.getWebRequestXmlTemplate() == null) ? "" : composed.getWebRequestXmlTemplate()));
 
-		try {
-			response = restTemplate.exchange(composed.getUri(),
-					HttpMethod.GET,//(composed.getWebRequestXmlTemplate() == null) ? HttpMethod.GET : HttpMethod.PUT, 
-							entity,
-					String.class);
-			logger.info("Response:" + response.toString());
-			responseTransformed = transformXml(response.getBody(), composed);
-		} catch (HttpClientErrorException e) {
-			logger.error("error is:" + e.getMessage());
-			throw new ConverterException(e);
-		} catch (XQueryUtilException e) {
-			logger.error("error is:" + e.getMessage());
-			return responseTransformed;
+			try {
+				if (composed.getUri() != null) {
+					response = restTemplate.exchange(composed.getUri(), HttpMethod.GET, // (composed.getWebRequestXmlTemplate()
+																						// ==
+																						// null)
+																						// ?
+																						// HttpMethod.GET
+																						// :
+																						// HttpMethod.PUT,
+							entity, String.class);
+					logger.info("Response:" + response.toString());
+					responseTransformed = transformXml(response.getBody(), composed);
+				} else {
+					responseTransformed = transformXml("", composed);
+				}
+
+			} catch (HttpClientErrorException e) {
+				logger.error("error is:" + e.getMessage());
+				throw new ConverterException(e);
+			} catch (XQueryUtilException e) {
+				logger.error("error is:" + e.getMessage());
+				respList.add(e.getMessage());
+			}
+			logger.debug("transformed response:" + responseTransformed);
+			respList.add(responseTransformed);
 		}
-		logger.debug("transformed response:" + responseTransformed);
-		return responseTransformed;
+		return respList;
 	}
 
 	private Conversion compose(Conversion conversion, FetchRequest req) throws ConverterException {
 		logger.info("composing conversion:" + conversion.toString());
-		Conversion composed=new Conversion();
+		Conversion composed = new Conversion();
 		composed.setUri(putProps(conversion.getUri(), req, conversion));
-		composed.setWebRequestXmlTemplate(
-				putProps(conversion.getWebRequestXmlTemplate(), req, conversion));
+		composed.setWebRequestXmlTemplate(putProps(conversion.getWebRequestXmlTemplate(), req, conversion));
 		composed.setxQueryScript(putProps(attachxQueryLib("fhir.xqm", conversion.getxQueryScript()), req, conversion));
 		logger.info("composed conversion:" + conversion.toString());
 		return composed;
@@ -135,7 +151,7 @@ public class ConverterImpl implements Converter {
 	}
 
 	private String attachxQueryLib(String libname, String xquery) throws ConverterException {
-		String path = "lib/"+libname;
+		String path = "lib/" + libname;
 		try {
 			return removeFirstLine(FileUtils.readFileToString(LocalUtils.getFile(path))) + removeFirstLine(xquery);
 		} catch (IOException | URISyntaxException e) {
@@ -145,11 +161,12 @@ public class ConverterImpl implements Converter {
 
 	private String removeFirstLine(String txt) {
 		String out = "";
-		if (txt==null || (!txt.contains("\n"))) return txt;
+		if (txt == null || (!txt.contains("\n")))
+			return txt;
 		String[] lines = txt.split("\n");
-		
+
 		for (int i = 1; i < lines.length; i++) {
-			out += "\n"+lines[i];
+			out += "\n" + lines[i];
 		}
 		return out;
 	}
