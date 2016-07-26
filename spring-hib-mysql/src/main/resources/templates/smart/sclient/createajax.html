@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Handling Form Submission</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    
+</head>
+<body>
+	<div id="feedback"> </div>
+	<h1>Create Client</h1>
+    <form action="#" th:action="@{/sclient/create}" th:object="${sclient}" method="post">
+    	<p>Id: <input type="text" th:field="*{id}" /></p>
+        <p>secret: <input type="text" th:field="*{secret}" /></p>
+        <p>redirecturl: <input type="text" th:field="*{redirectUrl}" /></p>
+         <p>userId: <input type="text" th:field="*{userId}" /></p>
+        <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
+    </form>
+</body>
+
+<script>
+	function display(data) {
+		var json = "<h4>Ajax Response</h4><pre>"
+				+ JSON.stringify(data, null, 4) + "</pre>";
+		$('#feedback').html(json);
+	}
+	
+	display("hi");
+</script>
+</html>

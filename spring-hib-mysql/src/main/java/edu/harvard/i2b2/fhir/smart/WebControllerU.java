@@ -1,5 +1,7 @@
 package edu.harvard.i2b2.fhir.smart;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -18,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,9 +41,14 @@ public class WebControllerU {
 	@Autowired
 	private SUserJdbcRepository repo;
 
+	@Autowired
+	private SClientJdbcRepository sclientRepo;
+
 	@Value("${cache.url}")
 	String cacheUrl;
 
+	
+	
 	@RequestMapping(value = "/create/{id:.*}", method = RequestMethod.GET)
 	public ResponseEntity create(HttpServletRequest request, @PathVariable String id) {
 
@@ -57,14 +65,33 @@ public class WebControllerU {
 		return new ResponseEntity<>(u.toString(), HttpStatus.OK);
 
 	}
-
-	@RequestMapping(value = "/view/{id:.*}", method = RequestMethod.GET)
-	public ResponseEntity view(HttpServletRequest request, @PathVariable String id) {
+	
+	@RequestMapping(value = "/home/{id:.*}", method = RequestMethod.GET)
+	public String home(HttpServletRequest request, @PathVariable String id,Model model) {
 
 		logger.debug("getContextPath()" + request.getContextPath());
 		SUser u=repo.findOne(id);
-		return new ResponseEntity<>((u!=null)?u.toString():"not found c with id:"+id, HttpStatus.OK);
+		//return new ResponseEntity<>((u!=null)?u.toString():"not found c with id:"+id, HttpStatus.OK);
+		model.addAttribute("suser", u);
+		model.addAttribute("allSClients", sclientRepo.findByUserId(u.getId()));
+		SClient nc = new SClient();
+		SecureRandom random = new SecureRandom();
+		nc.setSecret(new BigInteger(130, random).toString(32));
+		nc.setId(new BigInteger(130, random).toString(32));
+		model.addAttribute("newsclient",nc);
+		return "smart/suser/home";
+	}
+	
 
+	@RequestMapping(value = "/view/{id:.*}", method = RequestMethod.GET)
+	public String view(HttpServletRequest request, @PathVariable String id,Model model) {
+
+		logger.debug("getContextPath()" + request.getContextPath());
+		SUser u=repo.findOne(id);
+		//return new ResponseEntity<>((u!=null)?u.toString():"not found c with id:"+id, HttpStatus.OK);
+		model.addAttribute("suser", u);
+		model.addAttribute("allSClients", sclientRepo.findByUserId(u.getId()));
+		return "smart/suser/view";
 	}
 	
 	@RequestMapping(value = "/delete/{id:.*}", method = RequestMethod.GET)

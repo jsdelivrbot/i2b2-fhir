@@ -35,7 +35,7 @@ public class SClientJdbcRepository {
 	}
 
 	public List<SClient> findByUserId(String userid) {
-		List<SClient> c = jdbcOperations.query(SELECT_BY_ID, new SClientRowMapper(), userid);
+		List<SClient> c = jdbcOperations.query(SELECT_BY_USER_ID, new SClientRowMapper(), userid);
 		return c;
 
 	}
@@ -50,13 +50,13 @@ public class SClientJdbcRepository {
 	}
 
 	private void update(SClient c) {
-		jdbcOperations.update(UPDATE_SCLIENT, c.getSecret(), c.getUserId(), c.getRedirectUrl(), c.getCreateDT(),
+		jdbcOperations.update(UPDATE_SCLIENT, c.getSecret(), c.getRedirectUrl(),  c.getUserId(),c.getCreateDT(),
 				c.getId());
 
 	}
 
 	private void insert(SClient c) {
-		jdbcOperations.update(INSERT_SCLIENT, c.getId(), c.getSecret(), c.getUserId(), c.getRedirectUrl(),
+		jdbcOperations.update(INSERT_SCLIENT, c.getId(), c.getSecret(),  c.getRedirectUrl(),c.getUserId(),
 				c.getCreateDT());
 
 	}

@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Handling Form Submission</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<h1>Create Client</h1>
+    <form action="#" th:action="@{/sclient/create}" th:object="${newsclient}" method="post">
+    	<table>
+    	<tr><td> id</td> <td> secret</td><td>userid</td><td> redirecturl</td><td> action</td></tr>
+    	<tr> 
+    	<td> <input type="text" th:field="*{id}" readonly="readonly"/> </td>
+    	<td> <input type="text" th:field="*{secret}" readonly="readonly"/></td>
+         <td> <input type="text" th:field="*{userId}" /></td>
+          <td> <input type="text" th:field="*{redirectUrl}" /></td>
+        <td><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></td>
+        </tr>
+        </table>
+    </form>
+</body>
+</html>

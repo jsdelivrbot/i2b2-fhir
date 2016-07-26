@@ -21,11 +21,15 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.view.BeanNameViewResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 
 @SpringBootApplication
@@ -43,8 +47,23 @@ public class SpringWebConfig extends WebMvcConfigurerAdapter {
 		registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
 	}
 
-	@Bean
-	public InternalResourceViewResolver viewResolver() {
+	
+	 
+	    
+		
+		 @Bean
+		    public View jsonTemplate() {
+		        MappingJackson2JsonView view = new MappingJackson2JsonView();
+		        view.setPrettyPrint(true);
+		        return view;
+		    }
+		     
+		    @Bean
+		    public ViewResolver viewResolver() {
+		        return new BeanNameViewResolver();
+		    }
+	//@Bean
+	public InternalResourceViewResolver viewResolver1() {
 		InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
 		viewResolver.setViewClass(JstlView.class);
 		viewResolver.setPrefix("/WEB-INF/views/");

@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<table>
+    <tr><td>Id</td><td th:text="${sclient.id}" /></tr>
+    <tr><td>Secret</td><td th:text="${sclient.secret}" /></tr>
+    <tr><td>UserId</td><td th:text="${sclient.userId}" /></tr>
+    <tr><td>Created On</td><td th:text="${sclient.createDT} " /></tr>
+</table>
+
+</body>
+</html>
