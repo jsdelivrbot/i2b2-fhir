@@ -29,7 +29,7 @@ import javassist.bytecode.analysis.Util;
 
 @Controller
 @RequestMapping("/bs")
-@EnableJpaRepositories
+//@EnableJpaRepositories
 public class WebController {
 
 	static Logger logger = LoggerFactory.getLogger(WebController.class);

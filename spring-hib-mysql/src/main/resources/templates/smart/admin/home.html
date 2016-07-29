@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<table>
+    <tr><td>Name</td><td th:text="${suser.firstName}+' '+${suser.lastName}" /></tr>
+    <tr><td>Email</td><td th:text="${suser.email}" /></tr>
+    <tr><td>Created On</td><td th:text="${suser.createDT} " /></tr>
+</table>
+<hr></hr>
+<p>Users:</p>
+<table>
+<tr>
+<td>Id</td>
+<td>First Name</td>
+<td>Last Name</td>
+<td>Email</td>
+<td>Password</td>
+<td>Created On</td>
+</tr>
+<tr th:each="u : ${allsusers}">
+<td th:text="${u.id}" />
+	<td th:text="${u.firstName}" />
+	<td th:text="${u.lastName}" />
+    <td th:text="${u.email}" />
+    <td th:text="${u.password}" />
+    <td th:text="${u.createDT} " />
+</tr>
+    <form action="#" th:action="@{/suser/create}" th:object="${newsuser}" method="post">
+    	<table>
+    	<tr><td> id</td> <td> firstName</td><td>lastName</td><td> email</td><td> action</td></tr>
+    	<tr> 
+    	<td> <input type="text" th:field="*{id}" /> </td>
+    	<td> <input type="text" th:field="*{firstName}" /></td>
+         <td> <input type="text" th:field="*{lastName}" /></td>
+         <td> <input type="text" th:field="*{password}" /></td>
+          <td> <input type="text" th:field="*{email}" /></td>
+        <td><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></td>
+        </tr>
+        </table>
+    </form>
+</table>
+</body>
+</html>

@@ -13,9 +13,23 @@
 <hr></hr>
 <p>Clients:</p>
 <table>
+<tr><td> id</td> <td> secret</td><td>userid</td><td> redirecturl</td><td> createdDT</td></tr>
 <tr th:each="c : ${allSClients}">
-	<td th:text="${c}"></td>
-</tr>
+		<td th:text="${c.id}"></td>
+		<td th:text="${c.secret}"></td>
+		<td th:text="${c.userId}"></td>
+    </tr>
+    <form action="#" th:action="@{/sclient/create}" th:object="${newsclient}" method="post">
+    	
+    	<tr> 
+    	<td> <input type="text" th:field="*{id}" readonly="readonly"/> </td>
+    	<td> <input type="text" th:field="*{secret}" readonly="readonly"/></td>
+         <td> <input type="text" th:field="*{userId}" /></td>
+          <td> <input type="text" th:field="*{redirectUrl}" /></td>
+        <td><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></td>
+        </tr>
+       
+    </form>
 </table>
 </body>
 </html>

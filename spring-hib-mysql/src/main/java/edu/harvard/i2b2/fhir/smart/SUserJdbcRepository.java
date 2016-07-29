@@ -18,6 +18,8 @@ public class SUserJdbcRepository {
 	static Logger logger = LoggerFactory.getLogger(SUserJdbcRepository.class);
 	private static final String SELECT_BY_ID = "select id, password,firstname, lastname, email, createdt from suser where id=?";
 	
+	private static final String SELECT_ALL = "select id, password,firstname, lastname, email, createdt from suser";
+	
 	private static final String UPDATE_SUSER = "UPDATE suser SET password=?,firstname=?, lastname=?, email=?,createdt=? where id=?";
 	private static final String INSERT_SUSER = "INSERT INTO suser(id,password,firstname,lastname,email,createdt) values (?,?,?,?,?,?)";
 	private JdbcOperations jdbcOperations;
@@ -60,6 +62,12 @@ public class SUserJdbcRepository {
 	public SUser findOne(String id) {
 		List<SUser> l = find(id);
 		return (l.size() > 0) ? l.get(0) : null;
+	}
+
+	public List<SUser> getAll() {
+		List<SUser> ul = jdbcOperations.query(SELECT_ALL, new SUserRowMapper());
+		return ul;
+		
 	}
 
 }

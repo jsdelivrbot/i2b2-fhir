@@ -29,12 +29,12 @@
 	
 	
 	jQuery(document).ready(function($) {
-		$("#form1").submit(function(event) {
+		$("#form2").submit(function(event) {
 
 			// Prevent the form from submitting via the browser.
 			event.preventDefault();
 			
-			createSClient();
+			//createSClient();
 
 		});
 	});
@@ -43,7 +43,7 @@
 	
 	function createSClient() {
 		
-		var formdata = $('#form1')serializeArray();
+		var formData = $('#form1').serializeArray();
 		console.log(formData);
 		
 		$.ajax({

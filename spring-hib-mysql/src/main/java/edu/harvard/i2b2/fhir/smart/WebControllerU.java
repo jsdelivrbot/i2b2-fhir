@@ -47,64 +47,92 @@ public class WebControllerU {
 	@Value("${cache.url}")
 	String cacheUrl;
 
-	
-	
 	@RequestMapping(value = "/create/{id:.*}", method = RequestMethod.GET)
 	public ResponseEntity create(HttpServletRequest request, @PathVariable String id) {
 
 		logger.debug("getContextPath()" + request.getContextPath());
 		SUser u = new SUser();
 		u.setId(id);
-		u.setPassword("pw"+id);
-		u.setFirstName("firstName"+id);
-		u.setLastName("lastName"+id);
-		u.setEmail("email"+id);
-		u.setCreateDT(new java.sql.Timestamp( (new java.util.Date()).getTime() ));
+		u.setPassword("pw" + id);
+		u.setFirstName("firstName" + id);
+		u.setLastName("lastName" + id);
+		u.setEmail("email" + id);
+		u.setCreateDT(new java.sql.Timestamp((new java.util.Date()).getTime()));
 		repo.save(u);
 
 		return new ResponseEntity<>(u.toString(), HttpStatus.OK);
 
 	}
-	
+
 	@RequestMapping(value = "/home/{id:.*}", method = RequestMethod.GET)
-	public String home(HttpServletRequest request, @PathVariable String id,Model model) {
+	public String home(HttpServletRequest request, @PathVariable String id, Model model) {
 
 		logger.debug("getContextPath()" + request.getContextPath());
-		SUser u=repo.findOne(id);
-		//return new ResponseEntity<>((u!=null)?u.toString():"not found c with id:"+id, HttpStatus.OK);
+		SUser u = repo.findOne(id);
+		// return new ResponseEntity<>((u!=null)?u.toString():"not found c with
+		// id:"+id, HttpStatus.OK);
 		model.addAttribute("suser", u);
 		model.addAttribute("allSClients", sclientRepo.findByUserId(u.getId()));
 		SClient nc = new SClient();
-		SecureRandom random = new SecureRandom();
-		nc.setSecret(new BigInteger(130, random).toString(32));
-		nc.setId(new BigInteger(130, random).toString(32));
-		model.addAttribute("newsclient",nc);
+
+		nc.setSecret(getRandomString());
+		nc.setId(getRandomString());
+		model.addAttribute("newsclient", nc);
 		return "smart/suser/home";
 	}
-	
 
 	@RequestMapping(value = "/view/{id:.*}", method = RequestMethod.GET)
-	public String view(HttpServletRequest request, @PathVariable String id,Model model) {
+	public String view(HttpServletRequest request, @PathVariable String id, Model model) {
 
 		logger.debug("getContextPath()" + request.getContextPath());
-		SUser u=repo.findOne(id);
-		//return new ResponseEntity<>((u!=null)?u.toString():"not found c with id:"+id, HttpStatus.OK);
+		SUser u = repo.findOne(id);
+		// return new ResponseEntity<>((u!=null)?u.toString():"not found c with
+		// id:"+id, HttpStatus.OK);
 		model.addAttribute("suser", u);
 		model.addAttribute("allSClients", sclientRepo.findByUserId(u.getId()));
+		SClient nc = new SClient();
+
+		nc.setSecret(getRandomString());
+		nc.setId(getRandomString());
+		model.addAttribute("newsclient", nc);
 		return "smart/suser/view";
 	}
-	
+
 	@RequestMapping(value = "/delete/{id:.*}", method = RequestMethod.GET)
 	public ResponseEntity delete(HttpServletRequest request, @PathVariable String id) {
 
 		logger.debug("getContextPath()" + request.getContextPath());
-		SUser u=repo.findOne(id);
-		if(u!=null) repo.remove(id);
-		u=repo.findOne(id);
-		return new ResponseEntity<>((u!=null)?u.toString():"not found c with id:"+id, HttpStatus.OK);
+		SUser u = repo.findOne(id);
+		if (u != null)
+			repo.remove(id);
+		u = repo.findOne(id);
+		return new ResponseEntity<>((u != null) ? u.toString() : "not found c with id:" + id, HttpStatus.OK);
 
 	}
-	
-	
 
+	@RequestMapping(value = "/admin/home/{id:.*}", method = RequestMethod.GET)
+	public String adminHome(Model model, @PathVariable String id) {
+		SUser u = new SUser();
+		u.setId(getRandomString());
+		model.addAttribute("suser", repo.findOne(id));
+		model.addAttribute("newsuser", u);
+		model.addAttribute("allsusers", repo.getAll());
+
+		return "smart/admin/home";
+	}
+
+	@RequestMapping(value = "/create", method = RequestMethod.POST)
+	public ResponseEntity createPOST(@ModelAttribute SUser u, HttpServletRequest request) {
+
+		logger.debug("getContextPath()" + request.getContextPath());
+		u.setCreateDT(new java.sql.Timestamp((new java.util.Date()).getTime()));
+		repo.save(u);
+		return new ResponseEntity<>(u.toString(), HttpStatus.OK);
+
+	}
+
+	private String getRandomString() {
+		SecureRandom random = new SecureRandom();
+		return new BigInteger(130, random).toString(32);
+	}
 }
