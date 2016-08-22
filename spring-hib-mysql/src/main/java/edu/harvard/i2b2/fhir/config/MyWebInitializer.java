@@ -1,4 +1,4 @@
-package edu.harvard.i2b2.fhir.web;
+package edu.harvard.i2b2.fhir.config;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 

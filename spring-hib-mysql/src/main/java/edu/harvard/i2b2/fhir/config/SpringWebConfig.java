@@ -1,4 +1,4 @@
-package edu.harvard.i2b2.fhir.web;
+package edu.harvard.i2b2.fhir.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -43,7 +43,7 @@ import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 @Configuration
 @ComponentScan({ "edu.harvard*" })
 @PropertySource(value = { "classpath:application.properties" })
-@Import(value={edu.harvard.i2b2.fhir.web.WebSecurityConfig.class})
+@Import(value={edu.harvard.i2b2.fhir.config.WebSecurityConfig.class})
 public class SpringWebConfig extends WebMvcConfigurerAdapter {
 	
 	@Autowired

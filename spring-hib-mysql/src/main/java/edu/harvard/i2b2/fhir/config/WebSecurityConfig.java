@@ -1,4 +1,4 @@
-package edu.harvard.i2b2.fhir.web;
+package edu.harvard.i2b2.fhir.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
