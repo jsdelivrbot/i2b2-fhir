@@ -92,10 +92,8 @@ else "unknown"
 };
 
 declare function local:fnMetaData($last_updated as xs:string? ) as node(){
- <meta>
-      <versionId value="1"/>
-      <lastUpdated value="{$last_updated}"/>
- </meta>
+<meta>
+</meta>
 };
 
 declare function local:fnTxt($label as xs:string,$x as xs:string?){
@@ -180,11 +178,12 @@ return
  
   <!--   use FHIR code system for male / female   -->
   <gender value="{$gender_expanded}"/>
-  <birthDate value="{$birthdateDate}">
+  <!--<birthDate value="{$birthdateDate}">
     <extension url="http://hl7.org/fhir/StructureDefinition/patient-birthTime">
       <valueDateTime value="{$birthdate}"/>
     </extension>
   </birthDate>
+  -->
   <deceasedBoolean value="false"/>
   
   <!--
